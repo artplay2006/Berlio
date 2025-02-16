@@ -1,0 +1,52 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - BerlioWeb</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/BerlioWeb.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <div class="header-top">
+            <img src="~/images/logo.png" class="logo">
+            <img src="~/images/account.png" class="account">
+        </div>
+        <div class="menu">
+            <div class="leftmenu">
+
+            </div>
+            <div class="rightmenu">
+                <p style="color:white">сука</p>
+            </div>
+        </div>
+    </header>
+     @* <div class="container" style="margin-bottom:10vh"> *@
+        @* <main role="main" class="pb-3">  *@
+            @RenderBody()
+         @* </main> *@
+    @* </div>  *@
+
+    <footer class="footer" style="position:relative">
+        <div class="container">
+            <img src="~/images/logofooter.png" class="footer-logo">
+            <div class="footer-text">
+                ул. Быховская, 55<br>
+                г. Минск, Беларусь, 220007<br>
+                Телефоны отдела по <br>
+                обслуживанию клиентов в г. Минске: <br>
+                +375 17 210 00 00<br>
+
+                berlio@berlio.by<br>
+            </div>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,157 @@
+html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    /*margin-bottom: 60px;*/
+    background-color: #222222;
+    height: 100%;
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+    color: var(--bs-secondary-color);
+    text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+    text-align: start;
+}
+
+header {
+    margin: 0vh 18vw 0vh 18vw;
+    display: flex;
+    flex-direction: column; /* Вертикальное расположение элементов */
+    justify-content: flex-start; /* Выравнивание элементов по началу */
+    align-items: flex-start; /* Выравнивает элементы по левой стороне */
+    position: relative; /* Добавьте относительное позиционирование */
+}
+
+    header img {
+        margin: 3vh 0 3vh 0vw;
+    }
+
+.header-top {
+    display: flex;
+    justify-content: space-between; /* Распределяет пространство между элементами */
+    align-items: center; /* Выравнивает элементы по вертикали */
+    width: 100%;
+}
+
+.logo {
+    /* Фиксированная ширина и высота */
+    width: auto; /* примерно 215px при ширине viewport 1920px */
+    height: 5.92vh; /* примерно 64px при высоте viewport 1080px */
+}
+
+.account {
+    /* Фиксированная ширина и высота */
+    width: auto; /* примерно 42px при ширине viewport 1920px */
+    height: 3.91vh; /* примерно 42px при высоте viewport 1080px */
+    /* Выравнивание вправо */
+    margin-left: auto;
+}
+
+.menu {
+    width: 100%; /* Занимает всю ширину header */
+    height: 6.57vh; /* примерно 71px при высоте viewport 1080px */
+    margin-top: 0.89vh; /* примерно 10px при высоте viewport 1080px */
+    display: flex;
+    justify-content: space-between; /* Распределяет пространство между элементами */
+    align-items: center; /* Выравнивает элементы по центру по вертикали */
+}
+
+.leftmenu {
+    width: 40.55vw; /* примерно 778px при ширине viewport 1920px */
+    height: 4.91vh; /* примерно 53px при высоте viewport 1080px */
+    background: #00A738;
+}
+
+.rightmenu {
+    display: flex;
+    align-items: center; /* Выравнивает текст по центру по вертикали */
+}
+footer {
+    background-color: black;
+    color: white; /* Цвет текста футера */
+    margin: 5vh 0 0 0; /* Отступы сверху и снизу */
+    text-align: center; /* Выравнивание текста по центру */
+}
+.footer .container {
+    display: flex;
+    justify-content: space-between; /* Распределяет пространство между элементами */
+    align-items: center; /* Выравнивает элементы по центру по вертикали */
+    width: 100%;
+}
+
+.footer-logo {
+    width: 22vw; /* Примерная ширина логотипа */
+    height: auto;
+}
+
+.footer-text {
+    text-align: right; /* Выравнивание текста вправо */
+    /*color: white;*/
+    /* ул. Быховская, 55 
+г. Минск, Беларусь, 220007
+Телефоны отдела по 
+обслуживанию клиентов в г. Минске: 
++375 17 210 00 00
+ +375 17 397 10 81 +375 17 369 10 82 +375 29 623 08 88 (velcom) +375 29 773 08 88 МТС
+
+berlio@berlio.by */
+
+    
+    width: 420px;
+    left: 922px;
+    top: 2229px;
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 24px;
+    color: #FFFFFF;
+}
+.image-container {
+    position: relative; /* Относительное позиционирование для внутренних элементов */
+}
+
+.overlay-h {
+    position: absolute; /* Абсолютное позиционирование */
+    top: 15%; /* Центрирование по вертикали */
+    left: 25%; /* Центрирование по горизонтали */
+    /*transform: translate(-50%, -50%);*/ /* Центрирование по центру */
+    color: white; /* Цвет текста */
+    /*font-size: 3vw;*/ /* Размер шрифта в относительных единицах */
+    z-index: 1; /* Уровень поверхности */
+}
+.overlay-text {
+    position: absolute; /* Абсолютное позиционирование */
+    top: 25%; /* Центрирование по вертикали */
+    left: 25%; /* Центрирование по горизонтали */
+    /*transform: translate(-50%, -50%);*/ /* Центрирование по центру */
+    color: white; /* Цвет текста */
+    /*font-size: 2vw;*/ /* Размер шрифта в относительных единицах */
+    z-index: 1; /* Уровень поверхности */
+}
+.popular_recomended {
+    margin-top: 20px; /* Отступ сверху */
+    padding: 20px; /* Внутренние отступы */
+    background-color: #444; /* Цвет фона */
+    color: white; /* Цвет текста */
+    text-align: center; /* Выравнивание текста по центру */
+}
