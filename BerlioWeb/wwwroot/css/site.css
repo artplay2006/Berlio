@@ -78,9 +78,56 @@ header {
 .leftmenu {
     width: 40.55vw; /* примерно 778px при ширине viewport 1920px */
     height: 4.91vh; /* примерно 53px при высоте viewport 1080px */
-    background: #00A738;
+    background: green;
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* Выравнивает элементы по центру по вертикали */
+    padding: 0 1vw;
+}
+.dropdown .btn-secondary {
+    background-color: transparent; /* Прозрачный фон */
+    color: white; /* Белый цвет текста */
+    border: 1px solid transparent; /* Белая граница */
+    border-radius: 5px; /* Закругленные углы */
+    font-size: 1.1vw; /* Размер шрифта */
 }
 
+    .dropdown .btn-secondary:hover {
+        background-color: rgba(255, 255, 255, 0.1); /* Прозрачный фон при наведении */
+    }
+
+.dropdown-menu {
+    background-color: #333; /* Цвет фона выпадающего меню */
+    border: 1px solid white; /* Белая граница */
+    border-radius: 5px; /* Закругленные углы */
+}
+
+.dropdown-item {
+    color: white; /* Белый цвет текста */
+}
+
+    .dropdown-item:hover {
+        background-color: rgba(255, 255, 255, 0.1); /* Прозрачный фон при наведении */
+    }
+
+.rightmenu {
+    display: flex;
+    align-items: center; /* Выравнивает элементы по центру по вертикали */
+    gap: 10px; /* Отступ между кнопками */
+}
+
+.btn-transparent {
+    background-color: transparent; /* Прозрачный фон */
+    color: white; /* Белый цвет текста */
+    border: 1px solid transparent; /* Белая граница */
+    border-radius: 5px; /* Закругленные углы */
+    font-size: 1.1vw; /* Размер шрифта */
+    padding: 5px 10px; /* Внутренние отступы */
+}
+
+    .btn-transparent:hover {
+        background-color: rgba(255, 255, 255, 0.1); /* Прозрачный фон при наведении */
+    }
 .rightmenu {
     display: flex;
     align-items: center; /* Выравнивает текст по центру по вертикали */
@@ -149,9 +196,100 @@ berlio@berlio.by */
     z-index: 1; /* Уровень поверхности */
 }
 .popular_recomended {
-    margin-top: 20px; /* Отступ сверху */
-    padding: 20px; /* Внутренние отступы */
-    background-color: #444; /* Цвет фона */
+    margin: 7vh 18vw;
     color: white; /* Цвет текста */
+}
+
+.carousel-inner img {
+    height: 40vh; /* Высота изображений в слайдере */
+    object-fit: cover; /* Сохраняет соотношение сторон и заполняет контейнер */
+}
+
+
+.carousel-control-prev,
+.carousel-control-next {
+    filter: invert(100%) sepia(100%) saturate(0%) hue-rotate(136deg) brightness(102%) contrast(102%); /* Инвертирование цветов для белых стрелок */
+    background-color: rgba(0, 0, 0, 0.5); /* Темный полупрозрачный фон для стрелок */
+    border-radius: 50%; /* Круглые стрелки */
+    width: 50px; /* Ширина стрелок */
+    height: 50px; /* Высота стрелок */
+    padding: 0; /* Убирает стандартные отступы */
+    top: 40%;
+    transition: background-color 0.3s ease; /* Плавное изменение фона при наведении */
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    width: 20px; /* Размер иконок стрелок */
+    height: 20px; /* Размер иконок стрелок */
+}
+
+.carousel-caption {
+    position: absolute;
+    bottom: 20px; /* Отступ снизу */
+    left: 50%; /* Центрирование по горизонтали */
+    transform: translateX(-50%); /* Центрирование по горизонтали */
     text-align: center; /* Выравнивание текста по центру */
+    background-color: rgba(0, 0, 0, 0.5); /* Темный полупрозрачный фон для кнопок */
+    padding: 10px 20px; /* Внутренние отступы */
+    border-radius: 5px; /* Закругленные углы кнопок */
+    transition: background-color 0.3s ease; /* Плавное изменение фона при наведении */
+}
+
+.carousel-button {
+    background-color: transparent; /* Цвет фона кнопки */
+    color: white; /* Цвет текста кнопки */
+    border: none; /* Убирает границы кнопки */
+    padding: 10px 20px; /* Внутренние отступы */
+    font-size: 1.2vw; /* Размер шрифта в относительных единицах */
+    cursor: pointer; /* Указатель курсора при наведении */
+    border-radius: 5px; /* Закругленные углы кнопок */
+    transition: background-color 0.3s ease; /* Плавное изменение фона при наведении */
+}
+
+    .carousel-button:hover {
+        background-color: white; /* Цвет фона кнопки при наведении */
+        color:black;
+    }
+.info-section {
+    display: flex;
+    flex-wrap: wrap; /* Позволяет переносить блоки на новую строку */
+    justify-content: space-between; /* Распределяет пространство между элементами */
+    margin: 7vh 18vw;
+}
+
+.info-block {
+    width: 49.2%; /* Два блока в строке с небольшим отступом между ними */
+    height: 30vh; /* Высота блока */
+    background-size: cover; /* Сохраняет соотношение сторон и заполняет контейнер */
+    background-position: center; /* Центрирует фоновую картинку */
+    position: relative; /* Относительное позиционирование для внутреннего контента */
+    margin-bottom: 2vh; /* Отступ между строками блоков */
+    border-radius: 8px;
+}
+
+    .info-block:nth-child(2n) {
+        margin-right: 0; /* Убирает отступ справа у второго блока в строке */
+    }
+
+.info-content {
+    position: absolute;
+    top: 10px; /* Отступ сверху */
+    left: 10px; /* Отступ справа */
+    background-color: rgba(0, 0, 0, 0.5); /* Темный полупрозрачный фон для контента */
+    padding: 10px; /* Внутренние отступы */
+    border-radius: 5px; /* Закругленные углы контента */
+    right: 50%;
+}
+
+.info-title {
+    color: white; /* Цвет заголовка */
+    font-size: 1.2vw; /* Размер шрифта заголовка */
+    margin: 0 0 5px 0; /* Отступы вокруг заголовка */
+}
+
+.info-description {
+    color: white; /* Цвет описания */
+    font-size: 0.8vw; /* Размер шрифта описания */
+    margin: 0; /* Убирает стандартные отступы */
 }
