@@ -12,15 +12,15 @@
 <body>
     <header>
         <div class="header-top">
-            <img src="~/images/logo.png" class="logo">
+            <a asp-area="" asp-controller="Home" asp-action="Index"><img src="~/images/logo.png" class="logo"></a>
             <img src="~/images/account.png" class="account">
         </div>
         <div class="menu">
             <div class="leftmenu">
                 <div class="dropdown">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                    <a href="#" class="btn btn-secondary dropdown-toggle" id="dropdownMenuButton1" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="text-decoration: none;">
                         Программы
-                    </button>
+                    </a>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                         <li><a class="dropdown-item" href="#">Программа 1</a></li>
                         <li><a class="dropdown-item" href="#">Программа 2</a></li>
@@ -28,9 +28,9 @@
                     </ul>
                 </div>
                 <div class="dropdown">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false">
+                    <a href="#" class="btn btn-secondary dropdown-toggle" id="dropdownMenuButton2" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="text-decoration: none;">
                         Оборудование
-                    </button>
+                    </a>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton2">
                         <li><a class="dropdown-item" href="#">Оборудование 1</a></li>
                         <li><a class="dropdown-item" href="#">Оборудование 2</a></li>
@@ -38,9 +38,9 @@
                     </ul>
                 </div>
                 <div class="dropdown">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton3" data-bs-toggle="dropdown" aria-expanded="false">
+                    <a href="#" class="btn btn-secondary dropdown-toggle" id="dropdownMenuButton3" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="text-decoration: none;">
                         Для клиентов
-                    </button>
+                    </a>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton3">
                         <li><a class="dropdown-item" href="#">Клиенты 1</a></li>
                         <li><a class="dropdown-item" href="#">Клиенты 2</a></li>
@@ -48,9 +48,9 @@
                     </ul>
                 </div>
                 <div class="dropdown">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton4" data-bs-toggle="dropdown" aria-expanded="false">
+                    <a href="#" class="btn btn-secondary dropdown-toggle" id="dropdownMenuButton4" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="text-decoration: none;">
                         Сервисы
-                    </button>
+                    </a>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton4">
                         <li><a class="dropdown-item" href="#">Сервис 1</a></li>
                         <li><a class="dropdown-item" href="#">Сервис 2</a></li>
@@ -59,8 +59,8 @@
                 </div>
             </div>
             <div class="rightmenu">
-                <button class="btn btn-transparent" type="button">Контакты</button>
-                <button class="btn btn-transparent" type="button">О Берлио</button>
+                <a asp-area="" asp-controller="Contacts" asp-action="Index"><button class="btn btn-transparent" type="button">Контакты</button></a>
+                <a asp-area="" asp-controller="About" asp-action="Index"><button class="btn btn-transparent" type="button">О Берлио</button></a>
             </div>
         </div>
     </header>

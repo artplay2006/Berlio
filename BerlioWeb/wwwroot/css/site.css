@@ -39,6 +39,7 @@ header {
     justify-content: flex-start; /* Выравнивание элементов по началу */
     align-items: flex-start; /* Выравнивает элементы по левой стороне */
     position: relative; /* Добавьте относительное позиционирование */
+    z-index:1;
 }
 
     header img {
@@ -87,23 +88,40 @@ header {
 .dropdown .btn-secondary {
     background-color: transparent; /* Прозрачный фон */
     color: white; /* Белый цвет текста */
-    border: 1px solid transparent; /* Белая граница */
+    border: 1px solid transparent; /* Прозрачная граница */
     border-radius: 5px; /* Закругленные углы */
     font-size: 1.1vw; /* Размер шрифта */
+    outline: none; /* Убирает обводку при фокусе */
+    text-decoration: none; /* Убирает подчеркивание ссылки */
 }
 
     .dropdown .btn-secondary:hover {
         background-color: rgba(255, 255, 255, 0.1); /* Прозрачный фон при наведении */
+        border-color: white; /* Белая граница при наведении */
+    }
+
+    .dropdown .btn-secondary:focus,
+    .dropdown .btn-secondary:active {
+        background-color: transparent; /* Прозрачный фон при фокусе и активации */
+        border-color: white; /* Белая граница при фокусе и активации */
+        outline: none; /* Убирает обводку при фокусе */
+        box-shadow: none; /* Убирает тень при фокусе и активации */
     }
 
 .dropdown-menu {
     background-color: #333; /* Цвет фона выпадающего меню */
     border: 1px solid white; /* Белая граница */
     border-radius: 5px; /* Закругленные углы */
+    display: none;
+}
+
+.dropdown:hover .dropdown-menu {
+    display: block; /* Показывает выпадающее меню при наведении */
 }
 
 .dropdown-item {
     color: white; /* Белый цвет текста */
+    text-decoration: none; /* Убирает подчеркивание ссылок */
 }
 
     .dropdown-item:hover {
@@ -123,15 +141,20 @@ header {
     border-radius: 5px; /* Закругленные углы */
     font-size: 1.1vw; /* Размер шрифта */
     padding: 5px 10px; /* Внутренние отступы */
+    outline: none; /* Убирает обводку при фокусе */
 }
 
     .btn-transparent:hover {
         background-color: rgba(255, 255, 255, 0.1); /* Прозрачный фон при наведении */
     }
-.rightmenu {
-    display: flex;
-    align-items: center; /* Выравнивает текст по центру по вертикали */
+
+.country-flag {
+    width: 20px; /* Ширина флага */
+    height: 15px; /* Высота флага */
+    margin-right: 10px; /* Отступ справа от флага */
+    object-fit: contain; /* Сохраняет соотношение сторон */
 }
+
 footer {
     background-color: black;
     color: white; /* Цвет текста футера */
@@ -175,6 +198,23 @@ berlio@berlio.by */
 }
 .image-container {
     position: relative; /* Относительное позиционирование для внутренних элементов */
+}
+
+.contactsaboutTitle {
+    position: absolute;
+    height: 11.72vw;
+    left: 0px;
+    top: 119px;
+    background: #2D4128;
+    z-index: 0;
+    /*align-content:center;*/
+}
+.TitleContactsAbout {
+    color: white;
+    top: 60%;
+    text-align: center;
+    position: relative;
+    font-size: 2.1vw;
 }
 
 .overlay-h {
