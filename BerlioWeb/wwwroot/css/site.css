@@ -333,3 +333,67 @@ berlio@berlio.by */
     font-size: 0.8vw; /* Размер шрифта описания */
     margin: 0; /* Убирает стандартные отступы */
 }
+
+/* Отображение товаров для выбранной категории */
+.productsdiv {
+    margin: 7vh 18vw;
+    overflow-y: auto; /* Добавляет вертикальный скролл */
+    height: 49vw;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.item-product {
+    width: 35%;
+    height: 15vw;
+    background-size: cover; /* Сохраняет соотношение сторон и заполняет контейнер */
+    background-position: center; /* Центрирует фоновую картинку */
+    position: relative; /* Относительное позиционирование для внутреннего контента */
+    margin: 0.75vw;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Белая граница с небольшой прозрачностью */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Тень для создания эффекта поднятия */
+    overflow: hidden; /* Убирает возможные переполнения */
+}
+
+.product-content {
+    position: absolute;
+    bottom: 65%;
+    left: 27%;
+    background-color: rgba(0, 0, 0, 0.5); /* Темный полупрозрачный фон для контента */
+    padding: 10px; /* Внутренние отступы */
+    border-radius: 5px; /* Закругленные углы контента */
+    width: calc(50% - 20px); /* Ширина контента с учетом отступов */
+}
+
+.product-title {
+    color: white; /* Цвет заголовка */
+    font-size: 1.2vw; /* Размер шрифта заголовка */
+    margin: 0 0 5px 0; /* Отступы вокруг заголовка */
+    text-align: center;
+}
+
+.product-description {
+    color: white; /* Цвет описания */
+    font-size: 0.8vw; /* Размер шрифта описания */
+    margin: 0; /* Убирает стандартные отступы */
+}
+.product-button {
+    background-color: red;
+    color: white;
+    border: 1px solid black;
+    border-radius: 5px;
+    font-size: 1.1vw;
+    padding: 5px 10px;
+    outline: none;
+}
+    .product-button:hover {
+        background-color: white;
+        color: red;
+    }
+    .a-product {
+        left: 33%;
+        top: 82%;
+        position: relative;
+    }
