@@ -185,15 +185,15 @@ footer {
 
 berlio@berlio.by */
 
-    
+
     width: 420px;
     left: 922px;
     top: 2229px;
     font-family: 'Inter';
     font-style: normal;
     font-weight: 400;
-    font-size: 15px;
-    line-height: 24px;
+    font-size: 0.78vw;
+    line-height: 1.25vw;
     color: #FFFFFF;
 }
 .image-container {
@@ -397,3 +397,93 @@ berlio@berlio.by */
         top: 82%;
         position: relative;
     }
+
+/* страница выбранного товара */
+.productcontent {
+    margin: 7vh 18vw;
+    color: white;
+}
+
+.maininfoproduct {
+    display: flex; /* Используем Flexbox */
+    align-items: flex-start; /* Выравниваем элементы по верхнему краю по вертикали */
+}
+
+    .maininfoproduct img {
+        width: 29.48vw;
+        height: 20.78vw;
+        margin-right: 1vw; /* Отступ справа от изображения */
+    }
+
+.product-info {
+    display: flex;
+    flex-direction: column; /* Организуем элементы в колонку */
+    justify-content: flex-start; /* Выравниваем элементы по верхнему краю по вертикали */
+}
+
+    .product-info h4 {
+        font-size: 1.25vw;
+        margin-left: 0; /* Убираем отступ слева */
+        margin-right: 0; /* Убираем отступ справа */
+        margin-bottom: 0.5vw; /* Отступ снизу от заголовка */
+        margin-top: 0; /* Убираем отступ сверху */
+    }
+
+    .product-info p {
+        font-size: 0.83vw;
+        margin-left: 0; /* Убираем отступ слева */
+        margin-right: 0; /* Убираем отступ справа */
+        margin-bottom: 1vw; /* Отступ снизу от описания */
+        margin-top: 0; /* Убираем отступ сверху */
+        height: 15.43vw;
+    }
+
+.product-button {
+    background-color: red;
+    color: white;
+    border: 1px solid black;
+    border-radius: 5px;
+    font-size: 1.1vw;
+    padding: 5px 10px;
+    outline: none;
+    transition: background-color 0.3s ease; /* Плавное изменение цвета фона */
+}
+
+    .product-button:hover {
+        background-color: darkred; /* Новый цвет фона при наведении */
+    }
+
+.comment {
+    /*height: 7.81vw;*/
+    background-color: #D9D9D9;
+    display: flex;
+    color: black;
+    padding: 1vw 3vw;
+    margin-bottom: 1vw; /* Отступ между отзывами */
+    border-radius: 10px;
+}
+
+    .comment h6 {
+        font-size: 1vw;
+        /*margin-right: 1vw;*/ /* Отступ справа от имени */
+    }
+
+.comment-details {
+    display: flex;
+    flex-direction: column; /* Организуем элементы в колонку */
+    justify-content: flex-start; /* Выравниваем элементы по верхнему краю по вертикали */
+    width: 100%; /* Занимает всю ширину родительского контейнера */
+    /*margin: 1vw 0 0;*/
+}
+
+.rating {
+   /* margin: 0.5vw 0 0;*/ /* Отступ сверху от звезд */
+    font-size: 1vw; /* Размер шрифта звезд */
+}
+
+.comment-details p {
+    margin-left: 0; /* Убираем отступ слева */
+    margin-right: 0; /* Убираем отступ справа */
+    /*margin-bottom: 0.5vw;*/ /* Отступ снизу между элементами */
+    margin-top: 0; /* Убираем отступ сверху */
+}

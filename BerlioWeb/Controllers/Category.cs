@@ -8,34 +8,6 @@ namespace BerlioWeb.Controllers
     {
         public IActionResult Index()
         {
-            //CategoryModel model = new CategoryModel();
-
-            //switch (pageName)
-            //{
-            //    case "Page1":
-            //        model.pahtMainPage = "Заголовок страницы 1";
-            //        model.titlePage = "<p>Программы</p>";
-            //        model.descriptionPage = "~/images/page1.png";
-            //        ViewData["Title"] = "Программы";
-            //        break;
-            //    case "Page2":
-            //        model.pahtMainPage = "Заголовок страницы 2";
-            //        model.titlePage = "<p>Оборудование</p>";
-            //        model.descriptionPage = "~/images/page2.png";
-            //        ViewData["Title"] = "Оборудование";
-            //        break;
-            //    //case "Page3":
-            //    //    model.Title = "Заголовок страницы 3";
-            //    //    model.Content = "<p>Содержимое страницы 3</p>";
-            //    //    model.ImageUrl = "~/images/page3.png";
-            //    //    break;
-            //    //default:
-            //    //    model.Title = "Главная страница";
-            //    //    model.Content = "<p>Основное содержимое сайта</p>";
-            //    //    model.ImageUrl = "~/images/mainpage.png";
-            //    //    break;
-            //}
-
             return View();
         }
         public IActionResult Programs()
