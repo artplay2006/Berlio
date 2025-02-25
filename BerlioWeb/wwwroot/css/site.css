@@ -410,7 +410,7 @@ berlio@berlio.by */
 }
 
     .maininfoproduct img {
-        width: 29.48vw;
+        width: 50%;
         height: 20.78vw;
         margin-right: 1vw; /* Отступ справа от изображения */
     }
