@@ -8,70 +8,76 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/BerlioWeb.styles.css" asp-append-version="true" />
+    <!-- Добавление скрипта reCAPTCHA -->
+    <script src="https://www.google.com/recaptcha/api.js"></script>
 </head>
 <body>
-    <header>
-        <div class="header-top">
-            <a asp-area="" asp-controller="Home" asp-action="Index"><img src="~/images/logo.png" class="logo"></a>
-            <img src="~/images/account.png" class="account">
-        </div>
-        <div class="menu">
-            <div class="leftmenu">
-                <div class="dropdown">
-                    <a asp-area="" asp-controller="Category" asp-action="Programs" class="btn btn-secondary dropdown-toggle" id="dropdownMenuButton1" role="button" aria-expanded="false" style="text-decoration: none;">
-                        Программы
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                        <li><a class="dropdown-item" href="#">Программа 1</a></li>
-                        <li><a class="dropdown-item" href="#">Программа 2</a></li>
-                        <li><a class="dropdown-item" href="#">Программа 3</a></li>
-                    </ul>
+    @if (ViewContext?.RouteData?.Values["action"]?.ToString() != "Authorization" && ViewContext?.RouteData?.Values["action"]?.ToString() != "Registration")
+    {
+        <header>
+            <div class="header-top">
+                <a asp-area="" asp-controller="Home" asp-action="Index"><img src="~/images/logo.png" class="logo"></a>
+                <a asp-area="" asp-controller="Account" asp-action="Authorization"><img src="~/images/account.png" class="account"></a>
+            </div>
+            <div class="menu">
+                <div class="leftmenu">
+                    <div class="dropdown">
+                        <a asp-area="" asp-controller="Category" asp-action="Programs" class="btn btn-secondary dropdown-toggle" id="dropdownMenuButton1" role="button" aria-expanded="false" style="text-decoration: none;">
+                            Программы
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                            <li><a class="dropdown-item" href="#">Программа 1</a></li>
+                            <li><a class="dropdown-item" href="#">Программа 2</a></li>
+                            <li><a class="dropdown-item" href="#">Программа 3</a></li>
+                        </ul>
+                    </div>
+                    <div class="dropdown">
+                        <a asp-area="" asp-controller="Category" asp-action="Equipments" class="btn btn-secondary dropdown-toggle" id="dropdownMenuButton2" role="button" aria-expanded="false" style="text-decoration: none;">
+                            Оборудование
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton2">
+                            <li><a class="dropdown-item" href="#">Оборудование 1</a></li>
+                            <li><a class="dropdown-item" href="#">Оборудование 2</a></li>
+                            <li><a class="dropdown-item" href="#">Оборудование 3</a></li>
+                        </ul>
+                    </div>
+                    <div class="dropdown">
+                        <a asp-area="" asp-controller="Category" asp-action="ForClients" class="btn btn-secondary dropdown-toggle" id="dropdownMenuButton3" role="button" aria-expanded="false" style="text-decoration: none;">
+                            Для клиентов
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton3">
+                            <li><a class="dropdown-item" href="#">Клиенты 1</a></li>
+                            <li><a class="dropdown-item" href="#">Клиенты 2</a></li>
+                            <li><a class="dropdown-item" href="#">Клиенты 3</a></li>
+                        </ul>
+                    </div>
+                    <div class="dropdown">
+                        <a asp-area="" asp-controller="Category" asp-action="Services" class="btn btn-secondary dropdown-toggle" id="dropdownMenuButton4" role="button" aria-expanded="false" style="text-decoration: none;">
+                            Сервисы
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton4">
+                            <li><a class="dropdown-item" href="#">Сервис 1</a></li>
+                            <li><a class="dropdown-item" href="#">Сервис 2</a></li>
+                            <li><a class="dropdown-item" href="#">Сервис 3</a></li>
+                        </ul>
+                    </div>
                 </div>
-                <div class="dropdown">
-                    <a asp-area="" asp-controller="Category" asp-action="Equipments" class="btn btn-secondary dropdown-toggle" id="dropdownMenuButton2" role="button" aria-expanded="false" style="text-decoration: none;">
-                        Оборудование
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton2">
-                        <li><a class="dropdown-item" href="#">Оборудование 1</a></li>
-                        <li><a class="dropdown-item" href="#">Оборудование 2</a></li>
-                        <li><a class="dropdown-item" href="#">Оборудование 3</a></li>
-                    </ul>
-                </div>
-                <div class="dropdown">
-                    <a asp-area="" asp-controller="Category" asp-action="ForClients" class="btn btn-secondary dropdown-toggle" id="dropdownMenuButton3" role="button" aria-expanded="false" style="text-decoration: none;">
-                        Для клиентов
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton3">
-                        <li><a class="dropdown-item" href="#">Клиенты 1</a></li>
-                        <li><a class="dropdown-item" href="#">Клиенты 2</a></li>
-                        <li><a class="dropdown-item" href="#">Клиенты 3</a></li>
-                    </ul>
-                </div>
-                <div class="dropdown">
-                    <a asp-area="" asp-controller="Category" asp-action="Services" class="btn btn-secondary dropdown-toggle" id="dropdownMenuButton4" role="button" aria-expanded="false" style="text-decoration: none;">
-                        Сервисы
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton4">
-                        <li><a class="dropdown-item" href="#">Сервис 1</a></li>
-                        <li><a class="dropdown-item" href="#">Сервис 2</a></li>
-                        <li><a class="dropdown-item" href="#">Сервис 3</a></li>
-                    </ul>
+                <div class="rightmenu">
+                    <a asp-area="" asp-controller="Contacts" asp-action="Index"><button class="btn btn-transparent" type="button">Контакты</button></a>
+                    <a asp-area="" asp-controller="About" asp-action="Index"><button class="btn btn-transparent" type="button">О Берлио</button></a>
                 </div>
             </div>
-            <div class="rightmenu">
-                <a asp-area="" asp-controller="Contacts" asp-action="Index"><button class="btn btn-transparent" type="button">Контакты</button></a>
-                <a asp-area="" asp-controller="About" asp-action="Index"><button class="btn btn-transparent" type="button">О Берлио</button></a>
-            </div>
-        </div>
-    </header>
-     @* <div class="container" style="margin-bottom:10vh"> *@
-        @* <main role="main" class="pb-3">  *@
-            @RenderBody()
-         @* </main> *@
+        </header>
+    }
+    @* <div class="container" style="margin-bottom:10vh"> *@
+    @* <main role="main" class="pb-3">  *@
+    @RenderBody()
+    @* </main> *@
     @* </div>  *@
-
-    <footer class="footer" style="position:relative">
-        <div class="container">
+    @if (ViewContext?.RouteData?.Values["action"]?.ToString() != "Authorization" && ViewContext?.RouteData?.Values["action"]?.ToString() != "Registration")
+    {
+        <footer class="footer" style="position:relative">
+            <div class="container">
             <img src="~/images/logofooter.png" class="footer-logo">
             <div class="footer-text">
                 ул. Быховская, 55<br>
@@ -84,6 +90,7 @@
             </div>
         </div>
     </footer>
+    }
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
