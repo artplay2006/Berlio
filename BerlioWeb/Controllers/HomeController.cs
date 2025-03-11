@@ -18,7 +18,7 @@ namespace BerlioWeb.Controllers
             return View();
         }
 
-        public IActionResult Privacy()
+        public async Task<IActionResult> Privacy()
         {
             return View();
         }

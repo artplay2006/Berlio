@@ -1,0 +1,49 @@
+﻿@{
+    ViewData["Title"] = "Кабинет";
+}
+
+@model BerlioWeb.Models.User
+
+<div class="personal-container">
+    <div class="back-button">
+        <a asp-area="" asp-controller="Account" asp-action="Authorization" style="text-decoration: none; color: white;">
+            <i class="fas fa-arrow-left" style="font-size: 1.5rem;"></i>
+        </a>
+    </div>
+
+    <div class="user-profile">
+        <h2 class="profile-title">Ваши данные</h2>
+
+        <div class="user-info">
+            <div class="mb-3">
+                <label class="form-label">Логин:</label>
+                <span>@Model?.Login</span>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Электронная почта:</label>
+                <span>@Model?.Email</span>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Номер телефона:</label>
+                <span>@Model?.Telephone</span>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Номер договора:</label>
+                <span>@Model?.ContractNumber.GetValueOrDefault()</span>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Место заключения договора:</label>
+                <span>@Model?.PlaceOfTheContract</span>
+            </div>
+        </div>
+
+        <div class="profile-actions">
+            <a asp-action="EditProfile" class="btn btn-primary">Редактировать данные</a>
+            <a href="#" class="btn btn-danger">Выйти</a> <!-- Добавьте обработчик выхода -->
+        </div>
+    </div>
+</div>

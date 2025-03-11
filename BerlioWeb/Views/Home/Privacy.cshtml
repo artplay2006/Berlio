@@ -1,6 +1,37 @@
 ﻿@{
     ViewData["Title"] = "Privacy Policy";
+    User[] ?users=null;
+    await using (var db = new BerlioDatabaseContext())
+    {
+        users = db.Users.ToArray();
+    }
 }
-<h1>@ViewData["Title"]</h1>
-
-<p>Use this page to detail your site's privacy policy.</p>
+@* Scaffold-DbContext "Host=localhost;Port=5432;Database=BerlioDatabase;Username=postgres;Password=postgres" Npgsql.EntityFrameworkCore.PostgreSQL -OutputDir Models -force *@
+<div class="users-container">
+    <h2 class="users-title">Пользователи</h2>
+    <table class="table table-dark">
+        <thead>
+            <tr>
+                <th>Логин</th>
+                <th>Место заключения договора</th>
+                <th>Номер договора</th>
+                <th>Номер телефона</th>
+                <th>Электронная почта</th>
+                <th>Логин</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in users)
+            {
+                <tr>
+                    <td>@user.Login</td>
+                    <td>@user.PlaceOfTheContract</td>
+                    <td>@user.ContractNumber</td>
+                    <td>@user.Telephone</td>
+                    <td>@user.Email</td>
+                    <td>@user.Pasword</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

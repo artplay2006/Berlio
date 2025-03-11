@@ -12,7 +12,9 @@
     <script src="https://www.google.com/recaptcha/api.js"></script>
 </head>
 <body>
-    @if (ViewContext?.RouteData?.Values["action"]?.ToString() != "Authorization" && ViewContext?.RouteData?.Values["action"]?.ToString() != "Registration")
+    @if (ViewContext?.RouteData?.Values["action"]?.ToString() != "Authorization" && 
+    ViewContext?.RouteData?.Values["action"]?.ToString() != "Registration" &&
+    ViewContext?.RouteData?.Values["action"]?.ToString() != "Personal")
     {
         <header>
             <div class="header-top">
@@ -74,7 +76,9 @@
     @RenderBody()
     @* </main> *@
     @* </div>  *@
-    @if (ViewContext?.RouteData?.Values["action"]?.ToString() != "Authorization" && ViewContext?.RouteData?.Values["action"]?.ToString() != "Registration")
+    @if (ViewContext?.RouteData?.Values["action"]?.ToString() != "Authorization" && 
+    ViewContext?.RouteData?.Values["action"]?.ToString() != "Registration" &&
+    ViewContext?.RouteData?.Values["action"]?.ToString() != "Personal")
     {
         <footer class="footer" style="position:relative">
             <div class="container">
@@ -90,6 +94,19 @@
             </div>
         </div>
     </footer>
+    }
+    @section Scripts {
+        <script>
+            $(document).ready(function () {
+                // Добавьте токен в заголовок для всех запросов
+                $(document).ajaxSend(function (e, xhr, settings) {
+                    const token = localStorage.getItem('jwtToken');
+                    if (token) {
+                        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+                    }
+                });
+            });
+        </script>
     }
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

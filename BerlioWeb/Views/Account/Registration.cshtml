@@ -1,6 +1,9 @@
 ﻿@{
     ViewData["Title"] = "Регистрация";
 }
+
+@model BerlioWeb.Models.User
+
 <div class="login-container">
     <div class="back-button">
         <a asp-area="" asp-controller="Home" asp-action="Index" style="text-decoration: none; color: white;">
@@ -9,74 +12,97 @@
     </div>
     <div class="login-form">
         <h2 class="login-title">Регистрация</h2>
-        <form>
+        <form asp-action="Registration" method="post">
             <div class="mb-3">
-                <label for="contract-place" class="form-label">Место заключения договора</label>
-                <select class="form-select" id="contract-place">
-                    <option value="6910">Берлио Минск (центр 6910)</option>
-                    <option value="6913">СООО «Юнайтед-Компани» (центр 6913)</option>
-                    <option value="6914">ГК «А-100 АЗС» (центр 6914)</option>
-                    <option value="6918">ГУ «БЕЛАВТОСТРАДА» (центр 6918)</option>
-                    <option value="6916">ИООО "ЛУКОЙЛ Белоруссия" (центр 6916)</option>
-                    <option value="6927">Экорес (центр 6927)</option>
-                    <option value="6928">Нефтехимтрейдинг (центр 6928)</option>
-                    <option value="6930">ИООО "Газпромнефть-Белнефтепродукт"</option>
-                    <option value="6940">ИООО "РН-Запад" (Минск 6940)</option>
-                    <option value="6950">ИООО "ТАТБЕЛНЕФТЕПРОДУКТ"</option>
-                    <option value="2255">ИООО "РН-Запад" (Брест 2255)</option>
-                    <option value="3003">ИООО "РН-Запад" (Могилев 3003)</option>
-                    <option value="1010">Берлио Витебск (центр 1010)</option>
-                    <option value="2254">Берлио Брест (центр 2254)</option>
-                    <option value="2314">Берлио Гродно (центр 2314)</option>
-                    <option value="3000">Берлио Могилев (центр 3000)</option>
-                    <option value="4010">Берлио Гомель (центр 4010)</option>
-                    <option value="5001">Польша (центр 5001)</option>
-                    <option value="7000">ООО «РосБерлио» (РФ) (центр 7000)</option>
-                    <option value="8100">Киев (Украина) (центр 8100)</option>
-                    <option value="1015">УП «Витебскоблгаз» ф-л ПУ «Полоцкгаз» (центр 1015)</option>
-                    <option value="1017">УП «Витебскоблгаз» ф-л ПУ «Витебскгаз» (центр 1017)</option>
-                    <option value="1018">Новополоцкое ООО «Блок»</option>
-                    <option value="2227">ГП «Брестский мусороперерабатывающий завод» (центр 2227)</option>
-                    <option value="2248">ЗАО «Медтехника» (центр 2248)</option>
-                    <option value="2250">УП «Брестоблгаз» (центр 2250)</option>
-                    <option value="2257">ОДО «ГаллонАвтоГаз» (центр 2257)</option>
-                    <option value="2258">ООО «ДжиОйл» (центр 2258)</option>
-                    <option value="4012">ООО «МНПЗ плюс»</option>
-                    <option value="4020">УП «Гомельоблгаз» ф-л ПУ «Гомельгаз» (центр 4020)</option>
-                    <option value="6970">ООО «РОС-ВТС»</option>
+                <label for="place-of-the-contract" class="form-label">Место заключения договора</label>
+                <select class="form-select" id="place-of-the-contract" name="PlaceOfTheContract">
+                    <option value="Берлио Минск (центр 6910)">Берлио Минск (центр 6910)</option>
+                    <option value="СООО «Юнайтед-Компани» (центр 6913)">СООО «Юнайтед-Компани» (центр 6913)</option>
+                    <option value="ГК «А-100 АЗС» (центр 6914)">ГК «А-100 АЗС» (центр 6914)</option>
+                    <option value="ГУ «БЕЛАВТОСТРАДА» (центр 6918)">ГУ «БЕЛАВТОСТРАДА» (центр 6918)</option>
+                    <option value="ИООО «ЛУКОЙЛ Белоруссия» (центр 6916)">ИООО "ЛУКОЙЛ Белоруссия" (центр 6916)</option>
+                    <option value="Экорес (центр 6927)">Экорес (центр 6927)</option>
+                    <option value="Нефтехимтрейдинг (центр 6928)">Нефтехимтрейдинг (центр 6928)</option>
+                    <option value="ИООО «Газпромнефть-Белнефтепродукт»">ИООО "Газпромнефть-Белнефтепродукт"</option>
+                    <option value="ИООО «РН-Запад» (Минск 6940)">ИООО "РН-Запад" (Минск 6940)</option>
+                    <option value="ИООО «ТАТБЕЛНЕФТЕПРОДУКТ»">ИООО "ТАТБЕЛНЕФТЕПРОДУКТ"</option>
+                    <option value="ИООО «РН-Запад» (Брест 2255)">ИООО "РН-Запад" (Брест 2255)</option>
+                    <option value="ИООО «РН-Запад» (Могилев 3003)">ИООО "РН-Запад" (Могилев 3003)</option>
+                    <option value="Берлио Витебск (центр 1010)">Берлио Витебск (центр 1010)</option>
+                    <option value="Берлио Брест (центр 2254)">Берлио Брест (центр 2254)</option>
+                    <option value="Берлио Гродно (центр 2314)">Берлио Гродно (центр 2314)</option>
+                    <option value="Берлио Могилев (центр 3000)">Берлио Могилев (центр 3000)</option>
+                    <option value="Берлио Гомель (центр 4010)">Берлио Гомель (центр 4010)</option>
+                    <option value="Польша (центр 5001)">Польша (центр 5001)</option>
+                    <option value="ООО «РосБерлио» (РФ) (центр 7000)">ООО «РосБерлио» (РФ) (центр 7000)</option>
+                    <option value="Киев (Украина) (центр 8100)">Киев (Украина) (центр 8100)</option>
+                    <option value="УП «Витебскоблгаз» ф-л ПУ «Полоцкгаз» (центр 1015)">УП «Витебскоблгаз» ф-л ПУ «Полоцкгаз» (центр 1015)</option>
+                    <option value="УП «Витебскоблгаз» ф-л ПУ «Витебскгаз» (центр 1017)">УП «Витебскоблгаз» ф-л ПУ «Витебскгаз» (центр 1017)</option>
+                    <option value="Новополоцкое ООО «Блок»">Новополоцкое ООО «Блок»</option>
+                    <option value="ГП «Брестский мусороперерабатывающий завод» (центр 2227)">ГП «Брестский мусороперерабатывающий завод» (центр 2227)</option>
+                    <option value="ЗАО «Медтехника» (центр 2248)">ЗАО «Медтехника» (центр 2248)</option>
+                    <option value="УП «Брестоблгаз» (центр 2250)">УП «Брестоблгаз» (центр 2250)</option>
+                    <option value="ОДО «ГаллонАвтоГаз» (центр 2257)">ОДО «ГаллонАвтоГаз» (центр 2257)</option>
+                    <option value="ООО «ДжиОйл» (центр 2258)">ООО «ДжиОйл» (центр 2258)</option>
+                    <option value="ООО «МНПЗ плюс»">ООО «МНПЗ плюс»</option>
+                    <option value="УП «Гомельоблгаз» ф-л ПУ «Гомельгаз» (центр 4020)">УП «Гомельоблгаз» ф-л ПУ «Гомельгаз» (центр 4020)</option>
+                    <option value="ООО «РОС-ВТС»">ООО «РОС-ВТС»</option>
                 </select>
             </div>
             <div class="mb-3">
-                <label for="login" class="form-label">Номер договора</label>
-                <input type="text" class="form-control" id="login" placeholder="Введите номер договора">
+                <label for="contract-number" class="form-label">Номер договора</label>
+                <input type="text" class="form-control" id="contract-number" name="ContractNumber" placeholder="Введите номер договора">
+                @Html.ValidationMessageFor(model => model.ContractNumber, "", new { @class = "text-danger" })
             </div>
             <div class="mb-3">
-                <label for="phone" class="form-label">Номер телефона</label>
-                <input type="text" class="form-control" id="phone" placeholder="Введите телефон">
+                <label for="telephone" class="form-label">Номер телефона</label>
+                <input type="text" class="form-control" id="telephone" name="Telephone" placeholder="Введите телефон">
+                @Html.ValidationMessageFor(model => model.Telephone, "", new { @class = "text-danger" })
             </div>
             <div class="mb-3">
                 <label for="email" class="form-label">Электронная почта</label>
-                <input type="email" class="form-control" id="email" placeholder="Введите e-mail">
+                <input type="email" class="form-control" id="email" name="Email" placeholder="Введите e-mail">
+                @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
             </div>
             <div class="mb-3">
-                <label for="username" class="form-label">Логин</label>
-                <input type="text" class="form-control" id="username" placeholder="Введите логин">
+                <label for="login" class="form-label">Логин</label>
+                <input type="text" class="form-control" id="login" name="Login" placeholder="Введите логин">
+                @Html.ValidationMessageFor(model => model.Login, "", new { @class = "text-danger" })
             </div>
-            <div class="mb-3">
+            <div class="mb-3 password-field">
                 <label for="password" class="form-label">Пароль</label>
-                <input type="password" class="form-control" id="password" placeholder="Введите пароль">
+                <div class="input-group">
+                    <input type="password" class="form-control" id="password" name="Pasword" placeholder="Введите пароль">
+                    <button style="margin-bottom: 15px;" type="button" class="btn btn-outline-secondary" onclick="togglePasswordVisibility('password')">
+                        <i class="fas fa-eye-slash" id="password-icon"></i>
+                    </button>
+                </div>
+                @Html.ValidationMessageFor(model => model.Pasword, "", new { @class = "text-danger" })
             </div>
-            <div class="mb-3">
+            <div class="mb-3 password-field">
                 <label for="confirm-password" class="form-label">Повтор пароля</label>
-                <input type="password" class="form-control" id="confirm-password" placeholder="Повторно введите пароль">
+                <div class="input-group">
+                    <input type="password" class="form-control" id="confirm-password" name="ConfirmPassword" placeholder="Повторно введите пароль">
+                    <button style="margin-bottom: 15px;" type="button" class="btn btn-outline-secondary" onclick="togglePasswordVisibility('confirm-password')">
+                        <i class="fas fa-eye-slash" id="confirm-password-icon"></i>
+                    </button>
+                </div>
+                @if (ViewData["PasswordMismatchError"] != null)
+                {
+                    <div class="text-danger">
+                        @ViewData["PasswordMismatchError"]
+                    </div>
+                }
             </div>
             <!-- Добавление reCAPTCHA -->
-            @* Используйте этот ключ в HTML-коде, который ваш сайт передает на устройства пользователей.
-            6Lf2XeUqAAAAAPCXTv1sS4jWF14PJk5jdVLwKlmx
-            Используйте этот секретный ключ для обмена данными между сайтом и сервисом reCAPTCHA.
-            6Lf2XeUqAAAAANukIHbF80mNGGYgD8pfuynKx0PY *@
             <div class="mb-3">
-                <div class="g-recaptcha" data-sitekey="6Lf1XeUqAAAAANUNvIIAu3-pGAE0i2qVbBvm5tsP"></div>
+                <div class="g-recaptcha" data-sitekey="6Le4M-YqAAAAACmsDAGX-23Qou0jchr7tD23YcCP"></div>
+                @if (ViewData["ReCaptchaError"] != null)
+                {
+                    <div class="text-danger">
+                        @ViewData["ReCaptchaError"]
+                    </div>
+                }
             </div>
             <button type="submit" class="btn btn-primary login-button">Продолжить</button>
             <div class="login-links">
@@ -86,3 +112,21 @@
         </form>
     </div>
 </div>
+@section Scripts {
+    <script>
+        function togglePasswordVisibility(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(`${inputId}-icon`);
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            }
+        }
+    </script>
+}

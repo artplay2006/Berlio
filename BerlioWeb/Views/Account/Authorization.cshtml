@@ -1,23 +1,54 @@
 ﻿@{
     ViewData["Title"] = "Вход";
 }
+
+@model BerlioWeb.Models.User
+
 <div class="login-container">
     <div class="back-button">
-        @* href="javascript:history.back()" *@
         <a asp-area="" asp-controller="Home" asp-action="Index" style="text-decoration: none; color: white;">
             <i class="fas fa-arrow-left" style="font-size: 1.5rem;">×</i>
         </a>
     </div>
     <div class="login-form">
         <h2 class="login-title">Авторизация</h2>
-        <form>
+        <form asp-action="Authorization" asp-controller="Account" method="post">
             <div class="mb-3">
                 <label for="login" class="form-label">Логин</label>
-                <input type="text" class="form-control" id="login" placeholder="Введите логин">
+                <input type="text" class="form-control" id="login" name="Login" placeholder="Введите логин">
+                @* @Html.ValidationMessageFor(model => model.Login, "Поле логина не заполнено", new { @class = "text-danger" }) *@
+                @if (ViewData["LoginError"] != null)
+                {
+                    <div class="text-danger">
+                        @ViewData["LoginError"]
+                    </div>
+                }
             </div>
-            <div class="mb-3">
+            <div class="mb-3 password-field">
                 <label for="password" class="form-label">Пароль</label>
-                <input type="password" class="form-control" id="password" placeholder="Введите пароль">
+                <div class="input-group">
+                    <input type="password" class="form-control" id="password" name="Pasword" placeholder="Введите пароль">
+                    <button style="margin-bottom: 15px;" type="button" class="btn btn-outline-secondary" onclick="togglePasswordVisibility('password')">
+                        <i class="fas fa-eye-slash" id="password-icon"></i>
+                    </button>
+                </div>
+                @* @Html.ValidationMessageFor(model => model.Pasword, "Поле пароля не заполнено", new { @class = "text-danger" }) *@
+                @if (ViewData["PasswordError"] != null)
+                {
+                    <div class="text-danger">
+                        @ViewData["PasswordError"]
+                    </div>
+                }
+            </div>
+            <!-- Добавление reCAPTCHA -->
+            <div class="mb-3">
+                <div class="g-recaptcha" data-sitekey="6Le4M-YqAAAAACmsDAGX-23Qou0jchr7tD23YcCP"></div>
+                @if (ViewData["ReCaptchaError"] != null)
+                {
+                    <div class="text-danger">
+                        @ViewData["ReCaptchaError"]
+                    </div>
+                }
             </div>
             <button type="submit" class="btn btn-primary login-button">Продолжить</button>
             <div class="login-links">
@@ -27,3 +58,47 @@
         </form>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        //         document.getElementById("login-form").addEventListener("submit", async function (e) {
+        //     e.preventDefault();
+
+        //     const login = document.getElementById("login").value;
+        //     const password = document.getElementById("password").value;
+
+        //     const response = await fetch("/Account/Authorization", {
+        //         method: "POST",
+        //         headers: {
+        //             "Content-Type": "application/json",
+        //             "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]').value
+        //         },
+        //         body: JSON.stringify({ Login: login, Pasword: password })
+        //     });
+
+        //     const data = await response.json();
+
+        //     if (data.token) {
+        //         localStorage.setItem("jwtToken", response.token); // Сохраняем токен
+        //         window.location.href = "/Account/Personal"; // Перенаправляем на страницу личного кабинета
+        //     } else {
+        //         alert("Ошибка авторизации");
+        //     }
+        // });
+        // Функция для отображения/скрытия пароля
+        function togglePasswordVisibility(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(`${inputId}-icon`);
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            }
+        }
+    </script>
+}
