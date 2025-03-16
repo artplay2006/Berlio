@@ -1,9 +1,44 @@
-﻿@{
+﻿@model BerlioWeb.Models.User
+@inject IConfiguration configuration
+
+@{
     ViewData["Title"] = "Вход";
+    var siteKey = "6LfqoPIqAAAAAMf0iq6U0oqn57YhdIjJwnWazIeU";
 }
 
-@model BerlioWeb.Models.User
+@section Scripts {
+    <script src="https://www.google.com/recaptcha/api.js"></script>
+    <script>
+        function onSubmit(token) {
+          document.getElementById("myForm").submit();
+        }
+        // document.getElementById("myForm").addEventListener("submit", function (e) {
+        //     e.preventDefault(); // Предотвращаем стандартную отправку формы
 
+        //     grecaptcha.ready(function () {
+        //         grecaptcha.execute('@siteKey', { action: 'submit' }).then(function (token) {
+        //             // Добавляем токен в форму
+        //             document.getElementById("foo").value = token;
+        //             document.getElementById("myForm").submit();
+        //         });
+        //     });
+        // });
+        function togglePasswordVisibility(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(`${inputId}-icon`);
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            }
+        }
+    </script>
+}
 <div class="login-container">
     <div class="back-button">
         <a asp-area="" asp-controller="Home" asp-action="Index" style="text-decoration: none; color: white;">
@@ -12,7 +47,8 @@
     </div>
     <div class="login-form">
         <h2 class="login-title">Авторизация</h2>
-        <form asp-action="Authorization" asp-controller="Account" method="post">
+        <form id="myForm" asp-action="Authorization" asp-controller="Account" method="post">
+            @* <input type="hidden" id="foo" name="foo" /> *@
             <div class="mb-3">
                 <label for="login" class="form-label">Логин</label>
                 <input type="text" class="form-control" id="login" name="Login" placeholder="Введите логин">
@@ -41,7 +77,7 @@
                 }
             </div>
             <!-- Добавление reCAPTCHA -->
-            <div class="mb-3">
+            @* <div class="mb-3">
                 <div class="g-recaptcha" data-sitekey="6Le4M-YqAAAAACmsDAGX-23Qou0jchr7tD23YcCP"></div>
                 @if (ViewData["ReCaptchaError"] != null)
                 {
@@ -49,8 +85,14 @@
                         @ViewData["ReCaptchaError"]
                     </div>
                 }
-            </div>
-            <button type="submit" class="btn btn-primary login-button">Продолжить</button>
+            </div> *@
+            <button type="submit"
+                class="btn btn-primary login-button g-recaptcha"
+                    data-sitekey="@siteKey"
+                    data-callback='onSubmit'
+                    data-action='submit'>
+                Продолжить
+            </button>
             <div class="login-links">
                 <a asp-area="" asp-controller="Account" asp-action="Registration" class="register-link">Регистрация</a>
                 <a href="#" class="forgot-password-link">Забыл пароль?</a>
@@ -59,46 +101,3 @@
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        //         document.getElementById("login-form").addEventListener("submit", async function (e) {
-        //     e.preventDefault();
-
-        //     const login = document.getElementById("login").value;
-        //     const password = document.getElementById("password").value;
-
-        //     const response = await fetch("/Account/Authorization", {
-        //         method: "POST",
-        //         headers: {
-        //             "Content-Type": "application/json",
-        //             "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]').value
-        //         },
-        //         body: JSON.stringify({ Login: login, Pasword: password })
-        //     });
-
-        //     const data = await response.json();
-
-        //     if (data.token) {
-        //         localStorage.setItem("jwtToken", response.token); // Сохраняем токен
-        //         window.location.href = "/Account/Personal"; // Перенаправляем на страницу личного кабинета
-        //     } else {
-        //         alert("Ошибка авторизации");
-        //     }
-        // });
-        // Функция для отображения/скрытия пароля
-        function togglePasswordVisibility(inputId) {
-            const input = document.getElementById(inputId);
-            const icon = document.getElementById(`${inputId}-icon`);
-
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            } else {
-                input.type = 'password';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            }
-        }
-    </script>
-}

@@ -113,6 +113,7 @@ header {
     border: 1px solid white; /* Белая граница */
     border-radius: 5px; /* Закругленные углы */
     display: none;
+    min-width: 100%;
 }
 
 .dropdown:hover .dropdown-menu {
@@ -566,6 +567,70 @@ berlio@berlio.by */
 }
 
 /* ЛИЧНЫЙ КАБИНЕТ */
+.header-account {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: nowrap;
+    border-radius: 10px;
+}
+.header-account:hover{
+    background-color:gray;
+    /*border: 0.1px solid white;*/
+}
+/* Левое меню */
+.allinpersonal {
+    display: flex; /* Делаем контейнер flex-контейнером */
+    height: 100vh; /* Занимаем всю высоту экрана */
+}
+.left-menu {
+    width: 18vw;
+    background-color: #f4f4f4;
+    /*padding: 20px;*/
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+    .left-menu ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+        .left-menu ul li {
+            padding: 1.04vw;
+            cursor: pointer;
+            border-bottom: 1px solid #adadad;
+            text-align: end;
+            transition: background-color 0.3s;
+        }
+
+            .left-menu ul li:hover {
+                background-color: #ddd;
+            }
+
+            .left-menu ul li.active {
+                background-color: green;
+                color: white;
+            }
+
+/* Контент */
+.content {
+    flex: 1;
+    padding: 20px;
+    color: white;
+    overflow-y: auto; /* Добавляем прокрутку, если контент слишком длинный */
+}
+
+.content-item {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+    .content-item.active {
+        display: block;
+        opacity: 1;
+    }
 .personal-container {
     background-color: #333;
     border-radius: 10px;

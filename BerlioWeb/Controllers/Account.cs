@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Linq;
+using System.Net;
 using System.Security.Claims;
 
 namespace BerlioWeb.Controllers
@@ -14,16 +16,16 @@ namespace BerlioWeb.Controllers
             return View();
         }
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public IActionResult Personal()
+        public async Task<IActionResult> Personal()
         {
             // Получаем UserId из claims
             var userLogin = User.FindFirst("userLogin")?.Value;
             if (userLogin == null) return RedirectToAction("Authorization");
 
             // Извлекаем пользователя из БД
-            using (var _context = new BerlioDatabaseContext())
+            await using (var _context = new BerlioDatabaseContext())
             {
-                var user = _context.Users.Find(userLogin);
+                User? user = await _context.Users.FindAsync(userLogin);
                 if (user == null) return NotFound();
 
                 return View(user);
@@ -107,6 +109,14 @@ namespace BerlioWeb.Controllers
                         return View();
                     }
 
+                    string googleRecaptchaToken = Request.Form["g-recaptcha-response"].ToString();
+                    //Console.WriteLine(googleRecaptchaToken);
+                    bool isValid = await RecaptchaService.verifyReCaptchaV3(googleRecaptchaToken, "6LfqoPIqAAAAAKmjBGJ22rO4lGj9JqNDCW1P8ZMt", "https://www.google.com/recaptcha/api/siteverify");
+                    if (!isValid)
+                    {
+                        // ПЕРЕДЕЛАТЬ ВЫВОД ОШИБОК БЕЗ ПЕРЕЗАГРУЗКИ СТРАНИЦЫ
+                    }
+
                     // Генерация JWT-токена
                     JwtConfig _jwtConfig = new JwtConfig
                     {
@@ -118,21 +128,17 @@ namespace BerlioWeb.Controllers
                     var token = JwtUtil.GenerateJwtToken(existingUser, _jwtConfig);
 
                     // Установите куку или передайте токен клиенту
-                    //HttpContext httpContext=null;
-                    /*httpContext.*/Response.Cookies.Append("jwtToken", token, new CookieOptions
+                    Response.Cookies.Append("jwtToken", token, new CookieOptions
                     {
                         HttpOnly = true,  // Защита от XSS
                         Secure = true,    // Только через HTTPS
                         Expires = DateTime.Now.AddHours(1)
                     });
 
-                    // Возвращаем токен в JSON-формате
-                    //return Json(new { Success = true, Token = token, RedirectUrl = Url.Action("Personal", "Account") });
+                    // Возвращаем токен в JSON-формате;
                     return RedirectToAction("Personal");
-                    //return Results.Ok(token);
                 }
             }
-
             return View();
         }
     }

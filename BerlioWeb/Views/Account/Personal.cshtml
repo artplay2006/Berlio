@@ -4,7 +4,80 @@
 
 @model BerlioWeb.Models.User
 
-<div class="personal-container">
+@section Scripts {
+    <script>
+            document.addEventListener("DOMContentLoaded", function () {
+            const menuItems = document.querySelectorAll(".left-menu ul li");
+            const contentItems = document.querySelectorAll(".content-item");
+
+            menuItems.forEach(item => {
+                item.addEventListener("click", function () {
+                    // Убираем активный класс у всех пунктов меню
+                    menuItems.forEach(li => li.classList.remove("active"));
+                    // Добавляем активный класс к выбранному пункту
+                    item.classList.add("active");
+
+                    // Скрываем все блоки контента
+                    contentItems.forEach(content => content.classList.remove("active"));
+
+                    // Показываем выбранный блок контента
+                    const contentId = item.getAttribute("data-content");
+                    document.getElementById(contentId).classList.add("active");
+                });
+            });
+        });
+    </script>
+}
+
+<header>
+    <div class="header-top" style="margin: 3vh 0 3vh 0vw;">
+        <a asp-area="" asp-controller="Home" asp-action="Index"><h3>Личный кабинет</h3></a>
+        <a asp-area="" asp-controller="Account" asp-action="Authorization">
+            <div class="header-account dropdown" style="padding: 0.5vw 0;">
+                <div class="dropdown">
+                <img src="~/images/account.png" class="account" style="margin: 0vh 0 0vh 0vw;padding-left:1vw;">
+                    <b style="margin-bottom: 0; color:white;padding-left:1vw;padding-right: 1vw;">лоигн</b>
+                    <p style="color:white;margin-bottom: 0;margin-top:0.13vw;
+    margin-left: 50%;">▼</p>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#">Найстройки</a></li>
+                    <li><a class="dropdown-item" href="#">Выйти</a></li>
+                    </ul>
+                </div>
+        </div></a>
+    </div>
+</header>
+<div class="allinpersonal">
+    <div class="left-menu">
+        <ul>
+            <li data-content="settings" class="active">Настройки пользователя</li>
+            <li data-content="orders">Заказы</li>
+            <li data-content="history">История</li>
+            <li data-content="support">Поддержка</li>
+        </ul>
+    </div>
+
+    <!-- Контент -->
+    <div class="content">
+        <div id="settings" class="content-item active">
+            <h2>Настройки пользователя</h2>
+            <p>Здесь вы можете изменить свои настройки.</p>
+        </div>
+        <div id="orders" class="content-item">
+            <h2>Заказы</h2>
+            <p>Здесь отображаются ваши заказы.</p>
+        </div>
+        <div id="history" class="content-item">
+            <h2>История</h2>
+            <p>Здесь отображается история ваших действий.</p>
+        </div>
+        <div id="support" class="content-item">
+            <h2>Поддержка</h2>
+            <p>Здесь вы можете связаться с поддержкой.</p>
+        </div>
+    </div>
+</div>
+@* <div class="personal-container">
     <div class="back-button">
         <a asp-area="" asp-controller="Account" asp-action="Authorization" style="text-decoration: none; color: white;">
             <i class="fas fa-arrow-left" style="font-size: 1.5rem;"></i>
@@ -46,4 +119,4 @@
             <a href="#" class="btn btn-danger">Выйти</a> <!-- Добавьте обработчик выхода -->
         </div>
     </div>
-</div>
+</div> *@

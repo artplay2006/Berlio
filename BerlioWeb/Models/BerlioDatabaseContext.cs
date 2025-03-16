@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace BerlioWeb.Models;
 
 public partial class BerlioDatabaseContext : DbContext
-{
+{// Scaffold-DbContext "Host=localhost;Port=5432;Database=BerlioDatabase;Username=postgres;Password=postgres" Npgsql.EntityFrameworkCore.PostgreSQL -OutputDir Models -Force
     public BerlioDatabaseContext()
     {
     }
