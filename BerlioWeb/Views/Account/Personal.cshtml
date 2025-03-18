@@ -5,13 +5,18 @@
 @model BerlioWeb.Models.User
 
 @section Scripts {
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
     <script>
+            // Изменяем свойство background-color у body
+        document.body.style.backgroundColor = "DarkBlue";
             document.addEventListener("DOMContentLoaded", function () {
             const menuItems = document.querySelectorAll(".left-menu ul li");
             const contentItems = document.querySelectorAll(".content-item");
 
             menuItems.forEach(item => {
                 item.addEventListener("click", function () {
+
                     // Убираем активный класс у всех пунктов меню
                     menuItems.forEach(li => li.classList.remove("active"));
                     // Добавляем активный класс к выбранному пункту
@@ -23,25 +28,32 @@
                     // Показываем выбранный блок контента
                     const contentId = item.getAttribute("data-content");
                     document.getElementById(contentId).classList.add("active");
+                    document.getElementById("mesupdate").innerHTML = "";
                 });
             });
         });
     </script>
 }
 
-<header>
+<header style="background-color:DarkBlue">
     <div class="header-top" style="margin: 3vh 0 3vh 0vw;">
-        <a asp-area="" asp-controller="Home" asp-action="Index"><h3>Личный кабинет</h3></a>
-        <a asp-area="" asp-controller="Account" asp-action="Authorization">
-            <div class="header-account dropdown" style="padding: 0.5vw 0;">
+        <a style="text-decoration: none;
+    color: inherit;    border: white solid 1px;
+    border-radius: 10px;
+    padding: 10px;" asp-area="" asp-controller="Account" asp-action="Personal"><h3 style="color:white">Личный кабинет</h3></a>
+        <a style="text-decoration: none;
+    color: inherit;" asp-area="" asp-controller="" asp-action="">
+            <div class="header-account dropdown" style="border: white solid 1px;
+    border-radius: 10px;
+    padding: 10px 0;">
                 <div class="dropdown">
                 <img src="~/images/account.png" class="account" style="margin: 0vh 0 0vh 0vw;padding-left:1vw;">
-                    <b style="margin-bottom: 0; color:white;padding-left:1vw;padding-right: 1vw;">лоигн</b>
+                    <b style="margin-bottom: 0; color:white;padding-left:1vw;padding-right: 1vw;">@Model.Login</b>
                     <p style="color:white;margin-bottom: 0;margin-top:0.13vw;
     margin-left: 50%;">▼</p>
                 <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">Найстройки</a></li>
-                    <li><a class="dropdown-item" href="#">Выйти</a></li>
+                        <li><a class="dropdown-item" asp-controller="Home" asp-action="Index">Главная</a></li>
+                        <li><a class="dropdown-item" asp-controller="Account" asp-action="Authorization">Выйти из акк</a></li>
                     </ul>
                 </div>
         </div></a>
@@ -62,6 +74,87 @@
         <div id="settings" class="content-item active">
             <h2>Настройки пользователя</h2>
             <p>Здесь вы можете изменить свои настройки.</p>
+            <form method="post" action="/Account/UpdateUserSettings">
+                <div class="form-group">
+                    <label asp-for="Login"></label>
+                    <input asp-for="Login" class="form-control" readonly/>
+                    <span asp-validation-for="Login" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Password"></label>
+                    <input asp-for="Password" type="password" class="form-control" value="@Model.Password" />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Email"></label>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Telephone"></label>
+                    <input asp-for="Telephone" class="form-control" />
+                    <span asp-validation-for="Telephone" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="ContractNumber"></label>
+                    <input asp-for="ContractNumber" class="form-control" />
+                    <span asp-validation-for="ContractNumber" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="PlaceOfTheContract"></label>
+                    <select asp-for="PlaceOfTheContract" class="form-select">
+                        <option value="Берлио Минск (центр 6910)">Берлио Минск (центр 6910)</option>
+                        <option value="СООО «Юнайтед-Компани» (центр 6913)">СООО «Юнайтед-Компани» (центр 6913)</option>
+                        <option value="ГК «А-100 АЗС» (центр 6914)">ГК «А-100 АЗС» (центр 6914)</option>
+                        <option value="ГУ «БЕЛАВТОСТРАДА» (центр 6918)">ГУ «БЕЛАВТОСТРАДА» (центр 6918)</option>
+                        <option value="ИООО «ЛУКОЙЛ Белоруссия» (центр 6916)">ИООО "ЛУКОЙЛ Белоруссия" (центр 6916)</option>
+                        <option value="Экорес (центр 6927)">Экорес (центр 6927)</option>
+                        <option value="Нефтехимтрейдинг (центр 6928)">Нефтехимтрейдинг (центр 6928)</option>
+                        <option value="ИООО «Газпромнефть-Белнефтепродукт»">ИООО "Газпромнефть-Белнефтепродукт"</option>
+                        <option value="ИООО «РН-Запад» (Минск 6940)">ИООО "РН-Запад" (Минск 6940)</option>
+                        <option value="ИООО «ТАТБЕЛНЕФТЕПРОДУКТ»">ИООО "ТАТБЕЛНЕФТЕПРОДУКТ"</option>
+                        <option value="ИООО «РН-Запад» (Брест 2255)">ИООО "РН-Запад" (Брест 2255)</option>
+                        <option value="ИООО «РН-Запад» (Могилев 3003)">ИООО "РН-Запад" (Могилев 3003)</option>
+                        <option value="Берлио Витебск (центр 1010)">Берлио Витебск (центр 1010)</option>
+                        <option value="Берлио Брест (центр 2254)">Берлио Брест (центр 2254)</option>
+                        <option value="Берлио Гродно (центр 2314)">Берлио Гродно (центр 2314)</option>
+                        <option value="Берлио Могилев (центр 3000)">Берлио Могилев (центр 3000)</option>
+                        <option value="Берлио Гомель (центр 4010)">Берлио Гомель (центр 4010)</option>
+                        <option value="Польша (центр 5001)">Польша (центр 5001)</option>
+                        <option value="ООО «РосБерлио» (РФ) (центр 7000)">ООО «РосБерлио» (РФ) (центр 7000)</option>
+                        <option value="Киев (Украина) (центр 8100)">Киев (Украина) (центр 8100)</option>
+                        <option value="УП «Витебскоблгаз» ф-л ПУ «Полоцкгаз» (центр 1015)">УП «Витебскоблгаз» ф-л ПУ «Полоцкгаз» (центр 1015)</option>
+                        <option value="УП «Витебскоблгаз» ф-л ПУ «Витебскгаз» (центр 1017)">УП «Витебскоблгаз» ф-л ПУ «Витебскгаз» (центр 1017)</option>
+                        <option value="Новополоцкое ООО «Блок»">Новополоцкое ООО «Блок»</option>
+                        <option value="ГП «Брестский мусороперерабатывающий завод» (центр 2227)">ГП «Брестский мусороперерабатывающий завод» (центр 2227)</option>
+                        <option value="ЗАО «Медтехника» (центр 2248)">ЗАО «Медтехника» (центр 2248)</option>
+                        <option value="УП «Брестоблгаз» (центр 2250)">УП «Брестоблгаз» (центр 2250)</option>
+                        <option value="ОДО «ГаллонАвтоГаз» (центр 2257)">ОДО «ГаллонАвтоГаз» (центр 2257)</option>
+                        <option value="ООО «ДжиОйл» (центр 2258)">ООО «ДжиОйл» (центр 2258)</option>
+                        <option value="ООО «МНПЗ плюс»">ООО «МНПЗ плюс»</option>
+                        <option value="УП «Гомельоблгаз» ф-л ПУ «Гомельгаз» (центр 4020)">УП «Гомельоблгаз» ф-л ПУ «Гомельгаз» (центр 4020)</option>
+                        <option value="ООО «РОС-ВТС»">ООО «РОС-ВТС»</option>
+                    </select>
+                    <span asp-validation-for="PlaceOfTheContract" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                @if (TempData["UpdateMessage"] != null)
+                {
+                    <div id="mesupdate" style="text-align: right;
+    border: none;
+    background-color: transparent;
+    color: white;
+    font-size: 1.04vw;" class="alert alert-info">
+                        @TempData["UpdateMessage"]
+                    </div>
+                }
+            </form>
         </div>
         <div id="orders" class="content-item">
             <h2>Заказы</h2>

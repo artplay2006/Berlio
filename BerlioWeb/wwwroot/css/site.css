@@ -616,9 +616,11 @@ berlio@berlio.by */
 /* Контент */
 .content {
     flex: 1;
-    padding: 20px;
-    color: white;
+    /*color: white;*/
     overflow-y: auto; /* Добавляем прокрутку, если контент слишком длинный */
+    margin: 0vh 0vw 0vh 0vw;
+    padding: 0px 18vw 0px 5.21vw;
+    background-color: #cdcdcd;
 }
 
 .content-item {
@@ -630,7 +632,14 @@ berlio@berlio.by */
     .content-item.active {
         display: block;
         opacity: 1;
+        background-color: white;
+        padding: 0.78vw;
+        margin-top: 3vw;
+        border: 1px solid #999;
+        border-radius: 5px;
     }
+    /* инпуты в личном кабинете */
+
 .personal-container {
     background-color: #333;
     border-radius: 10px;

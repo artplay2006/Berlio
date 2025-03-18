@@ -1,5 +1,6 @@
 ﻿@{
     ViewData["Title"] = "Регистрация";
+    var siteKey = "6LfqoPIqAAAAAMf0iq6U0oqn57YhdIjJwnWazIeU";
 }
 
 @model BerlioWeb.Models.User
@@ -12,7 +13,7 @@
     </div>
     <div class="login-form">
         <h2 class="login-title">Регистрация</h2>
-        <form asp-action="Registration" method="post">
+        <form id="registrationForm" asp-action="Registration" method="post">
             <div class="mb-3">
                 <label for="place-of-the-contract" class="form-label">Место заключения договора</label>
                 <select class="form-select" id="place-of-the-contract" name="PlaceOfTheContract">
@@ -52,32 +53,32 @@
             <div class="mb-3">
                 <label for="contract-number" class="form-label">Номер договора</label>
                 <input type="text" class="form-control" id="contract-number" name="ContractNumber" placeholder="Введите номер договора">
-                @Html.ValidationMessageFor(model => model.ContractNumber, "", new { @class = "text-danger" })
+                <div id="ContractNumberError" class="text-danger" style="display: none;"></div>
             </div>
             <div class="mb-3">
                 <label for="telephone" class="form-label">Номер телефона</label>
                 <input type="text" class="form-control" id="telephone" name="Telephone" placeholder="Введите телефон">
-                @Html.ValidationMessageFor(model => model.Telephone, "", new { @class = "text-danger" })
+                <div id="TelephoneError" class="text-danger" style="display: none;"></div>
             </div>
             <div class="mb-3">
                 <label for="email" class="form-label">Электронная почта</label>
                 <input type="email" class="form-control" id="email" name="Email" placeholder="Введите e-mail">
-                @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+                <div id="EmailError" class="text-danger" style="display: none;"></div>
             </div>
             <div class="mb-3">
                 <label for="login" class="form-label">Логин</label>
                 <input type="text" class="form-control" id="login" name="Login" placeholder="Введите логин">
-                @Html.ValidationMessageFor(model => model.Login, "", new { @class = "text-danger" })
+                <div id="LoginError" class="text-danger" style="display: none;"></div>
             </div>
             <div class="mb-3 password-field">
                 <label for="password" class="form-label">Пароль</label>
                 <div class="input-group">
-                    <input type="password" class="form-control" id="password" name="Pasword" placeholder="Введите пароль">
+                    <input type="password" class="form-control" id="password" name="Password" placeholder="Введите пароль">
                     <button style="margin-bottom: 15px;" type="button" class="btn btn-outline-secondary" onclick="togglePasswordVisibility('password')">
                         <i class="fas fa-eye-slash" id="password-icon"></i>
                     </button>
                 </div>
-                @Html.ValidationMessageFor(model => model.Pasword, "", new { @class = "text-danger" })
+                <div id="PasswordError" class="text-danger" style="display: none;"></div>
             </div>
             <div class="mb-3 password-field">
                 <label for="confirm-password" class="form-label">Повтор пароля</label>
@@ -87,33 +88,79 @@
                         <i class="fas fa-eye-slash" id="confirm-password-icon"></i>
                     </button>
                 </div>
-                @if (ViewData["PasswordMismatchError"] != null)
-                {
-                    <div class="text-danger">
-                        @ViewData["PasswordMismatchError"]
-                    </div>
-                }
+                <div id="PasswordMismatchError" class="text-danger" style="display: none;"></div>
             </div>
             <!-- Добавление reCAPTCHA -->
-            <div class="mb-3">
+            @* <div class="mb-3">
                 <div class="g-recaptcha" data-sitekey="6Le4M-YqAAAAACmsDAGX-23Qou0jchr7tD23YcCP"></div>
-                @if (ViewData["ReCaptchaError"] != null)
-                {
-                    <div class="text-danger">
-                        @ViewData["ReCaptchaError"]
-                    </div>
-                }
-            </div>
-            <button type="submit" class="btn btn-primary login-button">Продолжить</button>
+                <div id="ReCaptchaError" class="text-danger" style="display: none;"></div>
+            </div> *@
+            <div id="ReCaptchaError" class="text-danger" style="display: none;"></div>
+            <button type="submit"
+                    class="btn btn-primary login-button g-recaptcha"
+                    data-sitekey="@siteKey"
+                    data-callback='onSubmit'
+                    data-action='submit'>
+                Продолжить
+            </button>
             <div class="login-links">
                 <a asp-area="" asp-controller="Account" asp-action="Authorization" class="register-link">Уже есть аккаунт</a>
-                @* <a href="#" class="forgot-password-link">Забыл пароль?</a> *@
             </div>
         </form>
     </div>
 </div>
 @section Scripts {
+    <script src="https://www.google.com/recaptcha/api.js"></script>
     <script>
+        function onSubmit(token) {
+            submitForm();
+        }
+
+            function submitForm() {
+            const form = document.getElementById("registrationForm");
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Перенаправляем на страницу авторизации
+                    window.location.href = data.redirectUrl;
+                } else {
+                    // Отображаем ошибки
+                    if (data.errors) {
+                        // Очищаем предыдущие ошибки
+                        document.querySelectorAll(".text-danger").forEach(el => el.textContent = "");
+
+                        // Отображаем новые ошибки
+                        for (const [field, messages] of Object.entries(data.errors)) {
+                            const errorDiv = document.getElementById(`${field}Error`);
+                            if (errorDiv) {
+                                errorDiv.textContent = messages.join(", ");
+                                errorDiv.style.display = "block";
+                            }
+                        }
+                    } else if (data.errorField) {
+                        // Отображаем одну ошибку
+                        const errorDiv = document.getElementById(data.errorField);
+                        if (errorDiv) {
+                            errorDiv.textContent = data.errorMessage;
+                            errorDiv.style.display = "block";
+                        }
+                    }
+                }
+            })
+            .catch(error => {
+                console.error("Ошибка:", error);
+            });
+        }
+
         function togglePasswordVisibility(inputId) {
             const input = document.getElementById(inputId);
             const icon = document.getElementById(`${inputId}-icon`);

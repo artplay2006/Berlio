@@ -1,19 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace BerlioWeb.Models;
 
 public partial class User
 {
+    [Key] // Указываем, что это первичный ключ
+    [Required(ErrorMessage = "Логин обязателен.")]
+    [StringLength(25, ErrorMessage = "Логин не должен превышать 25 символов.")]
     public string Login { get; set; } = null!;
 
-    public string? Pasword { get; set; }
+    [Required(ErrorMessage = "Пароль обязателен.")]
+    [StringLength(25, MinimumLength = 6, ErrorMessage = "Пароль должен быть от 6 до 25 символов.")]
+    public string? Password { get; set; }
 
+    [Required(ErrorMessage = "Email обязателен.")]
+    [EmailAddress(ErrorMessage = "Некорректный формат email.")]
     public string? Email { get; set; }
 
+    [Required(ErrorMessage = "Телефон обязателен.")]
+    [RegularExpression(@"^\+?[0-9]{10,15}$", ErrorMessage = "Некорректный формат телефона.")]
     public string? Telephone { get; set; }
 
+    [Required(ErrorMessage = "Номер договора обязателен.")]
+    [Range(1, 999999, ErrorMessage = "Номер договора должен быть положительным числом.")]
     public int? ContractNumber { get; set; }
 
+    [Required(ErrorMessage = "Место заключения договора обязательно.")]
+    [StringLength(100, ErrorMessage = "Место заключения договора не должно превышать 100 символов.")]
     public string? PlaceOfTheContract { get; set; }
+
+    public bool AreUsersEqualValue(User user2)
+    {
+        if (user2 == null)
+            return false;
+
+        return Login == user2.Login && Password == user2.Password &&
+               Email == user2.Email && Telephone == user2.Telephone &&
+               ContractNumber == user2.ContractNumber && PlaceOfTheContract == user2.PlaceOfTheContract;
+    }
 }

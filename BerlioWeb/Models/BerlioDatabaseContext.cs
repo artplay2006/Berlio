@@ -32,7 +32,7 @@ public partial class BerlioDatabaseContext : DbContext
             entity.Property(e => e.Login).HasColumnName("login");
             entity.Property(e => e.ContractNumber).HasColumnName("contract number");
             entity.Property(e => e.Email).HasColumnName("email");
-            entity.Property(e => e.Pasword).HasColumnName("pasword");
+            entity.Property(e => e.Password).HasColumnName("password");
             entity.Property(e => e.PlaceOfTheContract).HasColumnName("place of the contract");
             entity.Property(e => e.Telephone).HasColumnName("telephone");
         });

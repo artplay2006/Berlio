@@ -10,19 +10,39 @@
     <script src="https://www.google.com/recaptcha/api.js"></script>
     <script>
         function onSubmit(token) {
-          document.getElementById("myForm").submit();
+            submitForm();
         }
-        // document.getElementById("myForm").addEventListener("submit", function (e) {
-        //     e.preventDefault(); // Предотвращаем стандартную отправку формы
 
-        //     grecaptcha.ready(function () {
-        //         grecaptcha.execute('@siteKey', { action: 'submit' }).then(function (token) {
-        //             // Добавляем токен в форму
-        //             document.getElementById("foo").value = token;
-        //             document.getElementById("myForm").submit();
-        //         });
-        //     });
-        // });
+        function submitForm() {
+            const form = document.getElementById("myForm");
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Перенаправляем на страницу Personal
+                    window.location.href = data.redirectUrl;
+                } else {
+                    // Отображаем ошибку
+                    const errorDiv = document.getElementById(data.errorField);
+                    if (errorDiv) {
+                        errorDiv.textContent = data.errorMessage;
+                        errorDiv.style.display = "block";
+                    }
+                }
+            })
+            .catch(error => {
+                console.error("Ошибка:", error);
+            });
+        }
+
         function togglePasswordVisibility(inputId) {
             const input = document.getElementById(inputId);
             const icon = document.getElementById(`${inputId}-icon`);
@@ -48,46 +68,28 @@
     <div class="login-form">
         <h2 class="login-title">Авторизация</h2>
         <form id="myForm" asp-action="Authorization" asp-controller="Account" method="post">
-            @* <input type="hidden" id="foo" name="foo" /> *@
             <div class="mb-3">
                 <label for="login" class="form-label">Логин</label>
                 <input type="text" class="form-control" id="login" name="Login" placeholder="Введите логин">
-                @* @Html.ValidationMessageFor(model => model.Login, "Поле логина не заполнено", new { @class = "text-danger" }) *@
-                @if (ViewData["LoginError"] != null)
-                {
-                    <div class="text-danger">
-                        @ViewData["LoginError"]
-                    </div>
-                }
+                <div id="LoginError" class="text-danger" style="display: none;"></div>
             </div>
             <div class="mb-3 password-field">
                 <label for="password" class="form-label">Пароль</label>
                 <div class="input-group">
-                    <input type="password" class="form-control" id="password" name="Pasword" placeholder="Введите пароль">
+                    <input type="password" class="form-control" id="password" name="Password" placeholder="Введите пароль">
                     <button style="margin-bottom: 15px;" type="button" class="btn btn-outline-secondary" onclick="togglePasswordVisibility('password')">
                         <i class="fas fa-eye-slash" id="password-icon"></i>
                     </button>
                 </div>
-                @* @Html.ValidationMessageFor(model => model.Pasword, "Поле пароля не заполнено", new { @class = "text-danger" }) *@
-                @if (ViewData["PasswordError"] != null)
-                {
-                    <div class="text-danger">
-                        @ViewData["PasswordError"]
-                    </div>
-                }
+                <div id="PasswordError" class="text-danger" style="display: none;"></div>
             </div>
-            <!-- Добавление reCAPTCHA -->
             @* <div class="mb-3">
                 <div class="g-recaptcha" data-sitekey="6Le4M-YqAAAAACmsDAGX-23Qou0jchr7tD23YcCP"></div>
-                @if (ViewData["ReCaptchaError"] != null)
-                {
-                    <div class="text-danger">
-                        @ViewData["ReCaptchaError"]
-                    </div>
-                }
+                <div id="ReCaptchaError" class="text-danger" style="display: none;"></div>
             </div> *@
+            <div id="ReCaptchaError" class="text-danger" style="display: none;"></div>
             <button type="submit"
-                class="btn btn-primary login-button g-recaptcha"
+                    class="btn btn-primary login-button g-recaptcha"
                     data-sitekey="@siteKey"
                     data-callback='onSubmit'
                     data-action='submit'>

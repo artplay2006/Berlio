@@ -16,20 +16,63 @@ namespace BerlioWeb.Controllers
             return View();
         }
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<IActionResult> Personal()
+        public async Task<IActionResult> Personal(User user)
         {
-            // Получаем UserId из claims
             var userLogin = User.FindFirst("userLogin")?.Value;
-            if (userLogin == null) return RedirectToAction("Authorization");
+            if (string.IsNullOrEmpty(userLogin)) { return NotFound(); }
 
-            // Извлекаем пользователя из БД
-            await using (var _context = new BerlioDatabaseContext())
+            if (userLogin != user.Login)
             {
-                User? user = await _context.Users.FindAsync(userLogin);
-                if (user == null) return NotFound();
-
-                return View(user);
+                // Очищаем ModelState перед передачей данных в представление
+                ModelState.Clear();
+                // Извлекаем пользователя из БД
+                await using (var _context = new BerlioDatabaseContext())
+                {
+                    var usr = await _context.Users.FindAsync(userLogin);
+                    if (usr == null) return NotFound();
+                    return View(usr);
+                }
             }
+
+            return View(user);
+        }
+        [HttpPost]
+        //[ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateUserSettings(User newuserset)
+        {
+            if (ModelState.IsValid)
+            {
+                var LoginKey = newuserset.Login;
+                await using (var db = new BerlioDatabaseContext()) 
+                { 
+                    var olduserset = await db.Users.FirstOrDefaultAsync(u=>u.Login== LoginKey);
+                    if (olduserset.AreUsersEqualValue(newuserset))
+                    {
+                        //Console.WriteLine("изменений не произошло");
+                        TempData["UpdateMessage"] = "Изменений не произошло";
+                        //RedirectToAction("Personal");
+                    }
+                    else
+                    {
+                        Console.WriteLine("newuserset и olduserset разные");
+
+                        // Отсоединяем старый объект
+                        db.Entry(olduserset).State = EntityState.Detached;
+                        // Присоединяем новый объект
+                        db.Users.Update(newuserset);
+                        await db.SaveChangesAsync();
+                        TempData["UpdateMessage"] = "Изменения сохранены";
+                    }
+                    //Console.WriteLine("ModelState.IsValid");
+                    // Логика обновления данных пользователя
+                    // Например, сохранение в базу данных
+                }
+                // После успешного обновления перенаправляем пользователя
+                return RedirectToAction("Personal");
+            }
+            //Console.WriteLine("ModelState.IsNotValid");
+            // Если данные невалидны, возвращаем форму с ошибками
+            return RedirectToAction("Personal", newuserset);
         }
         public IActionResult Registration()
         {
@@ -39,47 +82,59 @@ namespace BerlioWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Registration(User user, string? ConfirmPassword)
         {
-            Console.WriteLine("Task<IActionResult> Registration");
-            //ModelState.IsValid — это свойство, которое используется для проверки валидности данных модели в контроллере.
-            //    Оно возвращает true, если все атрибуты модели прошли проверку на соответствие заданным аннотациям валидации,
-            //    и false в противном случае.
             if (ModelState.IsValid)
             {
                 if (string.IsNullOrEmpty(ConfirmPassword))
                 {
-                    ViewData["PasswordMismatchError"] = "Повтор пароля не написан";
-                    return View();
+                    return Json(new { success = false, errorField = "PasswordMismatchError", errorMessage = "Повтор пароля не написан" });
                 }
                 // Проверка совпадения паролей
-                else if (user.Pasword != ConfirmPassword)
+                else if (user.Password != ConfirmPassword)
                 {
-                    ViewData["PasswordMismatchError"] = "Пароли не совпадают.";
-                    return View();
+                    return Json(new { success = false, errorField = "PasswordMismatchError", errorMessage = "Пароли не совпадают." });
                 }
 
                 // Проверка reCAPTCHA
-                var response = Request.Form["g-recaptcha-response"];
-                var secretKey = "6Le4M-YqAAAAAEmMhNDumjgRLqqbAqWGdk29i3Z6"; // Замените на ваш секретный ключ
-                var gRecaptchaRequest = new System.Net.Http.HttpClient().GetAsync($"https://www.google.com/recaptcha/api/siteverify?secret={secretKey}&response={response}").Result;
-                var gRecaptchaResponseJson = gRecaptchaRequest.Content.ReadAsStringAsync().Result;
-                var gRecaptchaResponse = Newtonsoft.Json.JsonConvert.DeserializeObject<System.Collections.Generic.Dictionary<string, object>>(gRecaptchaResponseJson);
-                var success = gRecaptchaResponse["success"];
-
-                if (success?.ToString()?.ToLower() != "true")
+                //var response = Request.Form["g-recaptcha-response"];
+                //var secretKey = "6Le4M-YqAAAAAEmMhNDumjgRLqqbAqWGdk29i3Z6"; // Замените на ваш секретный ключ
+                //var gRecaptchaRequest = new System.Net.Http.HttpClient().GetAsync($"https://www.google.com/recaptcha/api/siteverify?secret={secretKey}&response={response}").Result;
+                //var gRecaptchaResponseJson = gRecaptchaRequest.Content.ReadAsStringAsync().Result;
+                //var gRecaptchaResponse = Newtonsoft.Json.JsonConvert.DeserializeObject<System.Collections.Generic.Dictionary<string, object>>(gRecaptchaResponseJson);
+                //var success = gRecaptchaResponse["success"];
+                string googleRecaptchaToken = Request.Form["g-recaptcha-response"].ToString();
+                bool isValid = await RecaptchaService.verifyReCaptchaV3(googleRecaptchaToken, "6LfqoPIqAAAAAKmjBGJ22rO4lGj9JqNDCW1P8ZMt", "https://www.google.com/recaptcha/api/siteverify");
+                if (!isValid/*success?.ToString()?.ToLower() != "true"*/)
                 {
-                    ViewData["ReCaptchaError"] = "reCAPTCHA не пройдена.";
-                    return View();
+                    return Json(new { success = false, errorField = "ReCaptchaError", errorMessage = "reCAPTCHA не пройдена." });
                 }
 
-                // Добавление пользователя в базу данных
+                // Проверка на существующий логин
                 await using (var db = new BerlioDatabaseContext())
                 {
+                    var existingUser = await db.Users.FirstOrDefaultAsync(u => u.Login == user.Login);
+                    if (existingUser != null)
+                    {
+                        return Json(new { success = false, errorField = "LoginError", errorMessage = "Пользователь с таким логином уже существует." });
+                    }
+
+                    // Добавление пользователя в базу данных
                     db.Add(user);
                     await db.SaveChangesAsync();
                 }
-                return RedirectToAction("Authorization", "Account");
+
+                // Возвращаем успешный результат
+                return Json(new { success = true, redirectUrl = Url.Action("Authorization", "Account") });
             }
-            return View();
+
+            // Если данные невалидны, возвращаем ошибки
+            var errors = ModelState
+                .Where(x => x.Value.Errors.Count > 0)
+                .ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
+                );
+
+            return Json(new { success = false, errors });
         }
         public IActionResult Authorization()
         {
@@ -87,10 +142,16 @@ namespace BerlioWeb.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Authorization(string? Login, string? Pasword)
+        public async Task<IActionResult> Authorization(string? Login, string? Password)
         {
-            if (string.IsNullOrEmpty(Login)) { ViewData["LoginError"] = "Логин не написан"; return View(); }
-            if (string.IsNullOrEmpty(Pasword)) { ViewData["PasswordError"] = "Пароль не написан"; return View(); }
+            if (string.IsNullOrEmpty(Login))
+            {
+                return Json(new { success = false, errorField = "LoginError", errorMessage = "Логин не написан" });
+            }
+            if (string.IsNullOrEmpty(Password))
+            {
+                return Json(new { success = false, errorField = "PasswordError", errorMessage = "Пароль не написан" });
+            }
 
             await using (var _context = new BerlioDatabaseContext())
             {
@@ -99,22 +160,19 @@ namespace BerlioWeb.Controllers
                     var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Login == Login);
                     if (existingUser == null)
                     {
-                        ViewData["LoginError"] = "Такого логина не существует";
-                        return View();
+                        return Json(new { success = false, errorField = "LoginError", errorMessage = "Такого логина не существует" });
                     }
 
-                    if (existingUser.Pasword != Pasword)
+                    if (existingUser.Password != Password)
                     {
-                        ViewData["PasswordError"] = "Неправильный пароль";
-                        return View();
+                        return Json(new { success = false, errorField = "PasswordError", errorMessage = "Неправильный пароль" });
                     }
 
                     string googleRecaptchaToken = Request.Form["g-recaptcha-response"].ToString();
-                    //Console.WriteLine(googleRecaptchaToken);
                     bool isValid = await RecaptchaService.verifyReCaptchaV3(googleRecaptchaToken, "6LfqoPIqAAAAAKmjBGJ22rO4lGj9JqNDCW1P8ZMt", "https://www.google.com/recaptcha/api/siteverify");
                     if (!isValid)
                     {
-                        // ПЕРЕДЕЛАТЬ ВЫВОД ОШИБОК БЕЗ ПЕРЕЗАГРУЗКИ СТРАНИЦЫ
+                        return Json(new { success = false, errorField = "ReCaptchaError", errorMessage = "reCAPTCHA не пройдена" });
                     }
 
                     // Генерация JWT-токена
@@ -135,11 +193,11 @@ namespace BerlioWeb.Controllers
                         Expires = DateTime.Now.AddHours(1)
                     });
 
-                    // Возвращаем токен в JSON-формате;
-                    return RedirectToAction("Personal");
+                    // Возвращаем успешный результат
+                    return Json(new { success = true, redirectUrl = Url.Action("Personal") });
                 }
             }
-            return View();
+            return Json(new { success = false, errorField = "GeneralError", errorMessage = "Ошибка при обработке запроса" });
         }
     }
 }
