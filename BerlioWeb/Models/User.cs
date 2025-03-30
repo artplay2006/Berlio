@@ -12,7 +12,7 @@ public partial class User
     public string Login { get; set; } = null!;
 
     [Required(ErrorMessage = "Пароль обязателен.")]
-    [StringLength(25, MinimumLength = 6, ErrorMessage = "Пароль должен быть от 6 до 25 символов.")]
+    [StringLength(60, MinimumLength = 6, ErrorMessage = "Пароль должен быть от 6 до 25 символов.")]
     public string? Password { get; set; }
 
     [Required(ErrorMessage = "Email обязателен.")]

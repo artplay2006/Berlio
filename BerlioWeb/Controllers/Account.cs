@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 using System.Net;
 using System.Security.Claims;
 
@@ -58,6 +59,11 @@ namespace BerlioWeb.Controllers
 
                         // Отсоединяем старый объект
                         db.Entry(olduserset).State = EntityState.Detached;
+                        // если пароль изменен
+                        if(BCrypt.Net.BCrypt.HashPassword(newuserset.Password) != olduserset.Password)
+                        {
+                            newuserset.Password = BCrypt.Net.BCrypt.HashPassword(newuserset.Password);
+                        }
                         // Присоединяем новый объект
                         db.Users.Update(newuserset);
                         await db.SaveChangesAsync();
@@ -118,6 +124,9 @@ namespace BerlioWeb.Controllers
                     }
 
                     // Добавление пользователя в базу данных
+                    // Добавление пользователя с зашифрованным паролем
+                    user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
+                    //BCrypt.Net.BCrypt.Verify("password", user.Password);
                     db.Add(user);
                     await db.SaveChangesAsync();
                 }
@@ -163,7 +172,7 @@ namespace BerlioWeb.Controllers
                         return Json(new { success = false, errorField = "LoginError", errorMessage = "Такого логина не существует" });
                     }
 
-                    if (existingUser.Password != Password)
+                    if (/*existingUser.Password != Password*/(!BCrypt.Net.BCrypt.Verify(Password, existingUser.Password)))
                     {
                         return Json(new { success = false, errorField = "PasswordError", errorMessage = "Неправильный пароль" });
                     }
