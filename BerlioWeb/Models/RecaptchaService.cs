@@ -27,7 +27,9 @@ namespace BerlioWeb.Models
                         {
                             return true;
                         }
+                        return false;
                     }
+                    return false;
                 }
             }
             return false;

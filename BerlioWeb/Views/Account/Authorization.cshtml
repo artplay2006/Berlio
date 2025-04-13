@@ -17,6 +17,12 @@
             const form = document.getElementById("myForm");
             const formData = new FormData(form);
 
+                // Сначала скрываем все возможные сообщения об ошибках
+        document.querySelectorAll('.text-danger').forEach(errorDiv => {
+            errorDiv.style.display = "none";
+            errorDiv.textContent = "";
+        });
+
             fetch(form.action, {
                 method: "POST",
                 body: formData,
@@ -36,6 +42,9 @@
                         errorDiv.textContent = data.errorMessage;
                         errorDiv.style.display = "block";
                     }
+                    // нужно добавить код, который будет объявлять errorDiv.style.display = "none" если ошибок нет для errorDiv
+                    // ошибку я посылаю таким образом:arguments
+                    // return Json(new { success = false, errorField = "LoginError", errorMessage = "Такого логина не существует" });
                 }
             })
             .catch(error => {

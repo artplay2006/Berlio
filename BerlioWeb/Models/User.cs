@@ -6,7 +6,7 @@ namespace BerlioWeb.Models;
 
 public partial class User
 {
-    [Key] // Указываем, что это первичный ключ
+    [Key]
     [Required(ErrorMessage = "Логин обязателен.")]
     [StringLength(25, ErrorMessage = "Логин не должен превышать 25 символов.")]
     public string Login { get; set; } = null!;

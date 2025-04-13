@@ -9,7 +9,7 @@ namespace BerlioWeb.Models
     {
         public static string GenerateJwtToken(User user, JwtConfig jwtConfig)
         {
-            Claim[] claims = [new("userLogin", user.Login)];
+            Claim[] claims = [new("userLogin", user.Login)/*, new("userHashPassword", user.Password)*/];
         //    {
         //    new Claim(ClaimTypes.NameIdentifier, user.Login.ToString()),
         //    new Claim(ClaimTypes.Name, user.Login.ToString()),

@@ -59,11 +59,17 @@ namespace BerlioWeb.Controllers
 
                         // Отсоединяем старый объект
                         db.Entry(olduserset).State = EntityState.Detached;
+
+                        // вытаскиваем хеш пароля из jwt токена и сравниваем с измененным паролем
+                        //var userHashPassword = User.FindFirst("userHashPassword")?.Value;
+                        //if (string.IsNullOrEmpty(userHashPassword)) { return NotFound(); }
+
                         // если пароль изменен
-                        if(BCrypt.Net.BCrypt.HashPassword(newuserset.Password) != olduserset.Password)
+                        if (newuserset.Password != olduserset.Password)
                         {
                             newuserset.Password = BCrypt.Net.BCrypt.HashPassword(newuserset.Password);
                         }
+
                         // Присоединяем новый объект
                         db.Users.Update(newuserset);
                         await db.SaveChangesAsync();
@@ -85,7 +91,7 @@ namespace BerlioWeb.Controllers
             return View();
         }
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken]
         public async Task<IActionResult> Registration(User user, string? ConfirmPassword)
         {
             if (ModelState.IsValid)
@@ -131,6 +137,17 @@ namespace BerlioWeb.Controllers
                     await db.SaveChangesAsync();
                 }
 
+
+                if (HttpContext.Request.Cookies.TryGetValue("jwtToken", out string token))
+                {
+                    Response.Cookies.Delete("jwtToken", new CookieOptions
+                    {
+                        HttpOnly = true,
+                        Secure = true,
+                        SameSite = SameSiteMode.Strict
+                    });
+                }
+
                 // Возвращаем успешный результат
                 return Json(new { success = true, redirectUrl = Url.Action("Authorization", "Account") });
             }
@@ -150,7 +167,7 @@ namespace BerlioWeb.Controllers
             return View();
         }
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken]
         public async Task<IActionResult> Authorization(string? Login, string? Password)
         {
             if (string.IsNullOrEmpty(Login))
@@ -171,17 +188,30 @@ namespace BerlioWeb.Controllers
                     {
                         return Json(new { success = false, errorField = "LoginError", errorMessage = "Такого логина не существует" });
                     }
-
-                    if (/*existingUser.Password != Password*/(!BCrypt.Net.BCrypt.Verify(Password, existingUser.Password)))
+                    // $2a$11$.UtamXhuRnrM1mWGHTXFF.F93NsO.CSKVVMhaTIqL8kAuMcP2NDyS
+                    // $2a$11$loTB0E8V2PU.vSFhstnIieBIwtstGiVGg0PzIfWmcw.PdVg9bhYza
+                    // $2a$11$pmRkg/Nj9H/HPYN7XD/8suAWehRo1aCYL3LL7LuqYMd/0Zqf5s9pu
+                    if (/*existingUser.Password != Password*/!(BCrypt.Net.BCrypt.Verify(Password, existingUser.Password)))
                     {
                         return Json(new { success = false, errorField = "PasswordError", errorMessage = "Неправильный пароль" });
                     }
 
+                    // Проверка reCAPTCHA
                     string googleRecaptchaToken = Request.Form["g-recaptcha-response"].ToString();
+
+                    // Если токена нет вообще (первая попытка)
+                    if (string.IsNullOrEmpty(googleRecaptchaToken))
+                    {
+                        return Json(new { success = false, errorField = "ReCaptchaError", errorMessage = "Пожалуйста, подтвердите, что вы не робот" });
+                    }
+
+                    // Проверяем reCAPTCHA v3
                     bool isValid = await RecaptchaService.verifyReCaptchaV3(googleRecaptchaToken, "6LfqoPIqAAAAAKmjBGJ22rO4lGj9JqNDCW1P8ZMt", "https://www.google.com/recaptcha/api/siteverify");
+
+                    // Если v3 не прошла, возвращаем ошибку (на клиенте покажется v2)
                     if (!isValid)
                     {
-                        return Json(new { success = false, errorField = "ReCaptchaError", errorMessage = "reCAPTCHA не пройдена" });
+                        return Json(new { success = false, errorField = "ReCaptchaError", errorMessage = "Пожалуйста, подтвердите, что вы не робот" });
                     }
 
                     // Генерация JWT-токена
@@ -207,6 +237,33 @@ namespace BerlioWeb.Controllers
                 }
             }
             return Json(new { success = false, errorField = "GeneralError", errorMessage = "Ошибка при обработке запроса" });
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Logout()
+        {
+            // Удаляем куку с JWT-токеном
+            Response.Cookies.Delete("jwtToken", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true, // Если используете HTTPS
+                SameSite = SameSiteMode.Strict
+            });
+
+            // Дополнительно можно очистить другие куки
+
+            // Перенаправляем на главную или страницу входа
+            return RedirectToAction("Index", "Home");
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult CheckToken()
+        {
+            if (Request.Cookies.ContainsKey("jwtToken"))
+            {
+                return RedirectToAction("Personal");
+            }
+            return RedirectToAction("Authorization");
         }
     }
 }
