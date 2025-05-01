@@ -15,6 +15,10 @@ public partial class BerlioDatabaseContext : DbContext
     {
     }
 
+    public virtual DbSet<Equipment> Equipment { get; set; }
+
+    public virtual DbSet<Program> Programs { get; set; }
+
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -23,6 +27,32 @@ public partial class BerlioDatabaseContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Equipment>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("Equipment_pkey");
+
+            entity.HasIndex(e => e.Name, "Equipment_name_key").IsUnique();
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Image).HasColumnName("image");
+            entity.Property(e => e.LongDescription).HasColumnName("long description");
+            entity.Property(e => e.Name).HasColumnName("name");
+            entity.Property(e => e.ShortDescription).HasColumnName("short description");
+        });
+
+        modelBuilder.Entity<Program>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("Programs_pkey");
+
+            entity.HasIndex(e => e.Name, "Programs_name_key").IsUnique();
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Image).HasColumnName("image");
+            entity.Property(e => e.LongDescription).HasColumnName("long description");
+            entity.Property(e => e.Name).HasColumnName("name");
+            entity.Property(e => e.ShortDescription).HasColumnName("short description");
+        });
+
         modelBuilder.Entity<User>(entity =>
         {
             entity.HasKey(e => e.Login).HasName("users_pkey");

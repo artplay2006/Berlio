@@ -62,10 +62,9 @@
                         <a asp-area="" asp-controller="Category" asp-action="Services" class="btn btn-secondary dropdown-toggle" id="dropdownMenuButton4" role="button" aria-expanded="false" style="text-decoration: none;">
                             Сервисы
                         </a>
-                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton4">
-                            <li><a class="dropdown-item" href="#">Сервис 1</a></li>
-                            <li><a class="dropdown-item" href="#">Сервис 2</a></li>
-                            <li><a class="dropdown-item" href="#">Сервис 3</a></li>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton2">
+                            <li><a class="dropdown-item" asp-controller="Service" asp-action="Service1">Оплата проезда по платным дорогам BelToll</a></li>
+                            <li><a class="dropdown-item" asp-controller="Service" asp-action="Service2">Оплата за топливо в формате IBAN</a></li>
                         </ul>
                     </div>
                 </div>
