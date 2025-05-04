@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace BerlioWeb.Models;
 
 public partial class BerlioDatabaseContext : DbContext
-{// Scaffold-DbContext "Host=localhost;Port=5432;Database=BerlioDatabase;Username=postgres;Password=postgres" Npgsql.EntityFrameworkCore.PostgreSQL -OutputDir Models -Force
+{
     public BerlioDatabaseContext()
     {
     }
@@ -15,7 +15,13 @@ public partial class BerlioDatabaseContext : DbContext
     {
     }
 
+    public virtual DbSet<BalancesOfService> BalancesOfServices { get; set; }
+
     public virtual DbSet<Equipment> Equipment { get; set; }
+
+    public virtual DbSet<EquipmentDelivery> EquipmentDeliveries { get; set; }
+
+    public virtual DbSet<OrderSell> OrderSells { get; set; }
 
     public virtual DbSet<Program> Programs { get; set; }
 
@@ -27,6 +33,25 @@ public partial class BerlioDatabaseContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<BalancesOfService>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("BalancesOfServices_pkey");
+
+            entity.HasIndex(e => e.Client, "BalancesOfServices_client_key").IsUnique();
+
+            entity.Property(e => e.Id)
+                .ValueGeneratedNever()
+                .HasColumnName("id");
+            entity.Property(e => e.Balance).HasColumnName("balance");
+            entity.Property(e => e.Client).HasColumnName("client");
+            entity.Property(e => e.Nameservice).HasColumnName("nameservice");
+
+            entity.HasOne(d => d.ClientNavigation).WithOne(p => p.BalancesOfService)
+                .HasForeignKey<BalancesOfService>(d => d.Client)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("BalancesOfServices_client_fkey");
+        });
+
         modelBuilder.Entity<Equipment>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("Equipment_pkey");
@@ -38,6 +63,45 @@ public partial class BerlioDatabaseContext : DbContext
             entity.Property(e => e.LongDescription).HasColumnName("long description");
             entity.Property(e => e.Name).HasColumnName("name");
             entity.Property(e => e.ShortDescription).HasColumnName("short description");
+        });
+
+        modelBuilder.Entity<EquipmentDelivery>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("EquipmentDelivery_pkey");
+
+            entity.ToTable("EquipmentDelivery");
+
+            entity.Property(e => e.Id)
+                .ValueGeneratedNever()
+                .HasColumnName("id");
+            entity.Property(e => e.Addressdelivery).HasColumnName("addressdelivery");
+            entity.Property(e => e.Idordersell).HasColumnName("idordersell");
+            entity.Property(e => e.Timedelivery)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("timedelivery");
+
+            entity.HasOne(d => d.IdordersellNavigation).WithMany(p => p.EquipmentDeliveries)
+                .HasForeignKey(d => d.Idordersell)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("EquipmentDelivery_idordersell_fkey");
+        });
+
+        modelBuilder.Entity<OrderSell>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("OrderSell_pkey");
+
+            entity.ToTable("OrderSell");
+
+            entity.Property(e => e.Id)
+                .ValueGeneratedNever()
+                .HasColumnName("id");
+            entity.Property(e => e.Client).HasColumnName("client");
+            entity.Property(e => e.Count).HasColumnName("count");
+            entity.Property(e => e.Finished)
+                .HasDefaultValue(false)
+                .HasColumnName("finished");
+            entity.Property(e => e.Idproduct).HasColumnName("idproduct");
+            entity.Property(e => e.Type).HasColumnName("type");
         });
 
         modelBuilder.Entity<Program>(entity =>

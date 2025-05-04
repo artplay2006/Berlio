@@ -31,6 +31,8 @@ public partial class User
     [StringLength(100, ErrorMessage = "Место заключения договора не должно превышать 100 символов.")]
     public string? PlaceOfTheContract { get; set; }
 
+    public virtual BalancesOfService? BalancesOfService { get; set; }
+
     public bool AreUsersEqualValue(User user2)
     {
         if (user2 == null)

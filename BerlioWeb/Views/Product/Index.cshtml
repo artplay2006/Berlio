@@ -1,39 +1,33 @@
 ﻿@model dynamic
+@{
+    var typeOfModel = Model.GetType().ToString();
+    Console.WriteLine(typeOfModel);
+}
 
 <div class="productcontent">
     <div class="maininfoproduct">
         <img src="~/images/@(Model.Image ?? "equipments.png")">
         <div class="product-info">
             <h4>@Html.Raw(Model.Name)</h4>
-            <p style="background-color: #e9ecef;
-    padding: 15px;
-    border-radius: 8px;">@Html.Raw(Model.ShortDescription)</p>
-            <a href="#">
-                <button class="product-button" type="button">Заказать</button>
-            </a>
+            <p style="background-color: #e9ecef; padding: 15px; border-radius: 8px;">@Html.Raw(Model.ShortDescription)</p>
+            <button class="product-button" type="button" onclick="openOrderModal()">Заказать</button>
         </div>
     </div>
-    <div style="margin: 2.5vw 0 0;
-    background-color: white;
-    padding: 20px;
-    border-radius: 10px;">
-        <h6 style ="font-size: 1vw;">Описание:</h6>
-        <p style="font-size: 0.83vw;background-color: #e9ecef;
-    padding: 15px;
-    border-radius: 8px;">
+
+    <div style="margin: 2.5vw 0 0; background-color: white; padding: 20px; border-radius: 10px;">
+        <h6 style="font-size: 1vw;">Описание:</h6>
+        <p style="font-size: 0.83vw; background-color: #e9ecef; padding: 15px; border-radius: 8px;">
             @Html.Raw(Model.LongDescription)
         </p>
     </div>
-    <div style="margin:2.5vw 0 0;    background-color: white;
-    border-radius: 10px;
-    padding: 20px;">
+
+    <div style="margin:2.5vw 0 0; background-color: white; border-radius: 10px; padding: 20px;">
         <h6 style="font-size: 1vw;">Отзывы:</h6>
         <div class="comment">
-            
             <div class="comment-details">
                 <h6 style="font-size: 1vw;">Артемий а р т е м и й</h6>
                 <div class="rating">
-                    <span style="font-size: 1vw; color:orange">★★★★★</span> <!-- Звезды как оценка товару -->
+                    <span style="font-size: 1vw; color:orange">★★★★★</span>
                 </div>
                 <p style="width: 70%; font-size: 0.83vw;">Все супер, просто замечательно!</p>
                 <p style="font-size: 0.83vw;">Дата</p>
@@ -41,3 +35,366 @@
         </div>
     </div>
 </div>
+
+<!-- Модальное окно заказа -->
+<div id="orderModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h3>Форма заказа</h3>
+        @if (typeOfModel == "BerlioWeb.Models.Program")
+        {
+            <p>Напишите реквизиты своей банковской карты ниже</p>
+            <form id="orderForm" onsubmit="submitOrderForm(event)">
+                <!-- Добавьте эти скрытые поля -->
+                <input type="hidden" id="productId" value="@Model.Id" />
+                <input type="hidden" id="productType" value="Program" />
+                <div class="form-group">
+                    <label for="cardNumber">Номер карты:</label>
+                    <input type="text" id="cardNumber" name="cardNumber" required placeholder="XXXX XXXX XXXX XXXX">
+                </div>
+                <div class="form-group">
+                    <label for="securityCode">Код безопасности:</label>
+                    <input type="text" id="securityCode" name="securityCode" required placeholder="CVC/CVV">
+                </div>
+                <div class="form-group">
+                    <label for="expiryDate">Срок карты:</label>
+                    <input type="text" id="expiryDate" name="expiryDate" placeholder="MM/YY">
+                </div>
+                <div class="form-group">
+                    <label for="cardHolder">Имя владельца карты:</label>
+                    <input type="text" id="cardHolder" name="cardHolder">
+                </div>
+                при нажатии на кнопку ниже должен отрабовать c# код написанный ниже
+                <button type="submit" class="submit-btn">Отправить заявку</button>
+            </form>
+            @* вот этот код *@
+            @* OrderSell orderSell = new OrderSell
+                {
+                    Idproduct = Model.Id,
+                    Count = 1,
+                    Type = "Program",
+                    Client = User.FindFirst("userLogin")?.Value,
+                    Finished = true
+                };
+            await using (var db  = new BerlioDatabaseContext())
+            {
+                OrderSell? oc = db.OrderSells.FirstOrDefault(o => o.Idproduct == orderSell.Idproduct && o.Client == orderSell.Client);
+                if (oc != null)
+                {
+                    // это нужно вывести на странице сайта
+                    Console.WriteLine("Объект такой уже существует " + oc.Idproduct + " " + oc.Client);
+
+                }
+                else
+                {
+                    await db.OrderSells.AddAsync(orderSell);
+                    await db.SaveChangesAsync();
+                }
+            } *@
+        }
+        else
+        {
+            <form id="orderForm" onsubmit="submitOrderForm(event)">
+                <input type="hidden" id="productId" value="@Model.Id" />
+                <input type="hidden" id="productType" value="Equipment" />
+                <div class="form-group">
+                    <label for="cardNumber">Номер карты:</label>
+                    <input type="text" id="cardNumber" name="cardNumber" required placeholder="XXXX XXXX XXXX XXXX">
+                </div>
+                <div class="form-group">
+                    <label for="securityCode">Код безопасности:</label>
+                    <input type="number" id="securityCode" name="securityCode" required placeholder="CVC/CVV">
+                </div>
+                <div class="form-group">
+                    <label for="expiryDate">Срок карты:</label>
+                    <input type="text" id="expiryDate" name="expiryDate" placeholder="MM/YY">
+                </div>
+                <div class="form-group">
+                    <label for="cardHolder">Имя владельца карты:</label>
+                    <input type="text" id="cardHolder" name="cardHolder">
+                </div>
+                <div class="form-group">
+                    <label for="cardHolder">Количество:</label>
+                    <input type="number" id="countEquipment" name="countEquipment">
+                </div>
+                <div class="form-group">
+                    <label for="cardHolder">Адрес доставки:</label>
+                    <input type="text" id="addressDelivery" name="addressDelivery">
+                </div>
+                <div class="form-group">
+                    <label for="cardHolder">Время доставки:</label>
+                    <input type="datetime-local" id="timeDelivery" name="timeDelivery">
+                </div>
+                <button type="submit" class="submit-btn">Отправить заявку</button>
+            </form>
+        }
+    </div>
+</div>
+
+<!-- Модальное окно авторизации -->
+<div id="authWarningModal" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <h3>Требуется авторизация</h3>
+        <p>Для оформления заказа необходимо войти в систему</p>
+        <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 1rem;">
+            <button onclick="redirectToAuth()" class="auth-btn auth-btn-login">Войти</button>
+            <button onclick="closeAuthWarning()" class="auth-btn auth-btn-cancel">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Стили модального окна */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+        background-color: #fff;
+        margin: 10% auto;
+        padding: 25px;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        animation: modalopen 0.4s;
+    }
+
+    @@keyframes modalopen {
+        from {
+            opacity: 0;
+            transform: translateY(-50px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+        .close:hover {
+            color: #333;
+        }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+    .submit-btn {
+        background-color: #4CAF50;
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        width: 100%;
+    }
+
+        .submit-btn:hover {
+            background-color: #45a049;
+        }
+
+    .auth-btn {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    .auth-btn-login {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    .auth-btn-cancel {
+        background-color: #f44336;
+        color: white;
+    }
+</style>
+
+<script>
+    // Функция для получения куки по имени
+    function getCookie(name) {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            const [cookieName, cookieValue] = cookie.trim().split('=');
+            if (cookieName === name) return cookieValue;
+        }
+        return null;
+    }
+
+        // На клиенте
+    async function openOrderModal() {
+        try {
+            const response = await fetch('/api/auth/check');
+            if (!response.ok) throw new Error('Auth check failed');
+
+            const { isAuthenticated } = await response.json();
+
+            if (!isAuthenticated) {
+                showAuthWarningModal();
+                return;
+            }
+
+            document.getElementById('orderModal').style.display = 'block';
+        } catch (error) {
+            console.error('Auth check error:', error);
+            showAuthWarningModal();
+        }
+    }
+
+    function showAuthWarningModal() {
+        document.getElementById('authWarningModal').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function redirectToAuth() {
+        window.location.href = 'https://localhost:7224/Account/Authorization';
+    }
+
+    function closeAuthWarning() {
+        document.getElementById('authWarningModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+    // Закрытие модального окна заказа
+    function closeModal() {
+        document.getElementById('orderModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+    // Закрытие при клике вне окна
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+            closeModal();
+            closeAuthWarning();
+        }
+    }
+
+    // Обработка формы
+    // document.getElementById('orderForm').addEventListener('submit', function(e) {
+    //     e.preventDefault();
+
+    //     // Здесь можно добавить AJAX-отправку формы
+    //     alert('Заявка отправлена! Мы свяжемся с вами в ближайшее время.');
+    //     closeModal();
+    // });
+        async function submitOrderForm(event) {
+        event.preventDefault();
+
+        // Получаем значения из формы
+        const productId = document.getElementById('productId').value;
+        const productType = document.getElementById('productType').value;
+        const count = productType === 'Program' ? 1 : document.getElementById('countEquipment').value;
+
+        try {
+            const response = await fetch('/Product/ProcessOrder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({
+                    Idproduct: productId,
+                    Type: productType,
+                    Count: count,
+                    Finished: productType==='Equipment'?false:true,
+                    // Client будет установлен на сервере
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                @* 
+                Здесь должно быть красивое уведомление      
+                if (result.exists) {
+                    alert('Вы уже заказывали этот товар ранее');
+                } else {
+                    alert('Заказ успешно оформлен!');
+                } *@
+                closeModal();
+            } else {
+                alert('Ошибка при оформлении заказа: ' + result.message);
+            }
+
+            if(productType==='Equipment'){
+
+                const response2 = await fetch('/Product/CreateDelivery', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({
+                    Addressdelivery: document.getElementById('addressDelivery').value,
+                    Timedelivery: document.getElementById('timeDelivery').value,
+                })
+            });
+
+            const result2 = await response2.json();
+
+            if (response2.ok) {
+                @* 
+                Здесь должно быть красивое уведомление    
+                if (result2.exists) {
+                    alert('Вы уже заказывали этот товар ранее');
+                } else {
+                    alert('Заказ успешно оформлен!');
+                } *@
+                closeModal();
+            } else {
+                alert('Ошибка при оформлении заказа: ' + result2.message);
+            }
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            alert('Произошла ошибка при отправке формы');
+        }
+    }
+
+    // Маска для номера карты
+    document.getElementById('cardNumber').addEventListener('input', function(e) {
+        this.value = this.value.replace(/\D/g, '')
+            .replace(/(\d{4})(?=\d)/g, '$1 ');
+    });
+
+    // Маска для срока действия
+    document.getElementById('expiryDate').addEventListener('input', function(e) {
+        this.value = this.value.replace(/\D/g, '')
+            .replace(/(\d{2})(?=\d)/g, '$1/')
+            .substring(0, 5);
+    });
+</script>

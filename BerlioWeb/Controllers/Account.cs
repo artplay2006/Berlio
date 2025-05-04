@@ -265,5 +265,12 @@ namespace BerlioWeb.Controllers
             }
             return RedirectToAction("Authorization");
         }
+        // На сервере (Controller)
+        [HttpGet("/api/auth/check")]
+        public IActionResult CheckAuth()
+        {
+            var hasToken = Request.Cookies.ContainsKey("jwtToken");
+            return Json(new { isAuthenticated = hasToken });
+        }
     }
 }
