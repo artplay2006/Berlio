@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Dynamic;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace BerlioWeb.Controllers
 {
@@ -77,23 +78,38 @@ namespace BerlioWeb.Controllers
             {
                 await using (var db = new BerlioDatabaseContext())
                 {
-                    // Заполняем недостающие поля
-                    var lastOrder = await db.OrderSells.LastOrDefaultAsync();
-                    if (lastOrder==null)
+                    // Получаем последний заказ с явным указанием порядка сортировки
+                    var lastOrder = await db.OrderSells
+                        .OrderByDescending(o => o.Id) // Сортируем по ID в обратном порядке
+                        .FirstOrDefaultAsync(); // Берем первый элемент после сортировки
+
+                    if (lastOrder == null)
                     {
-                        return BadRequest(new { message = "Заказ не был оформлен. Пиздец ошибка" });
+                        return BadRequest(new { message = "Не найдено ни одного заказа" });
                     }
+
                     equipmentDelivery.Idordersell = lastOrder.Id;
 
                     await db.EquipmentDeliveries.AddAsync(equipmentDelivery);
                     await db.SaveChangesAsync();
-                    //Console.WriteLine($"{equipmentDelivery.Id}\n{equipmentDelivery.Idordersell}\n{equipmentDelivery.Addressdelivery}\n{equipmentDelivery.Timedelivery}");
-                    return Ok(new { success = true });
+
+                    return Ok(new
+                    {
+                        success = true,
+                        deliveryId = equipmentDelivery.Id,
+                        orderId = equipmentDelivery.Idordersell
+                    });
                 }
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                // Логирование ошибки
+                Console.Error.WriteLine($"Ошибка при создании доставки: {ex}");
+                return BadRequest(new
+                {
+                    message = "Произошла ошибка при обработке запроса",
+                    detailed = ex.Message
+                });
             }
         }
     }

@@ -64,33 +64,8 @@
                     <label for="cardHolder">Имя владельца карты:</label>
                     <input type="text" id="cardHolder" name="cardHolder">
                 </div>
-                при нажатии на кнопку ниже должен отрабовать c# код написанный ниже
                 <button type="submit" class="submit-btn">Отправить заявку</button>
             </form>
-            @* вот этот код *@
-            @* OrderSell orderSell = new OrderSell
-                {
-                    Idproduct = Model.Id,
-                    Count = 1,
-                    Type = "Program",
-                    Client = User.FindFirst("userLogin")?.Value,
-                    Finished = true
-                };
-            await using (var db  = new BerlioDatabaseContext())
-            {
-                OrderSell? oc = db.OrderSells.FirstOrDefault(o => o.Idproduct == orderSell.Idproduct && o.Client == orderSell.Client);
-                if (oc != null)
-                {
-                    // это нужно вывести на странице сайта
-                    Console.WriteLine("Объект такой уже существует " + oc.Idproduct + " " + oc.Client);
-
-                }
-                else
-                {
-                    await db.OrderSells.AddAsync(orderSell);
-                    await db.SaveChangesAsync();
-                }
-            } *@
         }
         else
         {

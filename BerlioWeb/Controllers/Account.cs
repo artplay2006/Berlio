@@ -31,10 +31,45 @@ namespace BerlioWeb.Controllers
                 {
                     var usr = await _context.Users.FindAsync(userLogin);
                     if (usr == null) return NotFound();
+                    //_context.OrderSells.Where(os => os.Client == userLogin && os.Type == "Program").Select(os => os.Idproduct)
+                    //_context.Programs.Where(p=>p.Id==/*сюда нужно впихнуть все id из запроса выше*/);
+                    ViewBag.UserPrograms = _context.Programs
+                                            .Where(p => _context.OrderSells
+                                            .Any(os => os.Client == userLogin && os.Type == "Program" && os.Idproduct == p.Id))
+                                            .ToList();
+                    var userEquipments = _context.OrderSells
+                                            .Where(os => os.Client == userLogin && os.Type == "Equipment")
+                                            .Join(
+                                                _context.Equipment,
+                                                os => os.Idproduct,
+                                                e => e.Id,
+                                                (os, e) => new {
+                                                    e.Id,
+                                                    e.Name,
+                                                    e.ShortDescription,
+                                                    e.Image,
+                                                    os.Count,
+                                                    os.Finished,
+                                                    Delivery = os.EquipmentDeliveries.FirstOrDefault() // берем первую запись о доставке
+                                                })
+                                            .Select(x => new {
+                                                x.Id,
+                                                x.Name,
+                                                x.ShortDescription,
+                                                x.Image,
+                                                x.Count,
+                                                Status = x.Finished ? "Доставлено" : "В обработке",
+                                                AddressDelivery = x.Delivery != null ? x.Delivery.Addressdelivery : "Адрес не указан",
+                                                TimeDelivery = x.Delivery != null ? x.Delivery.Timedelivery : (DateTime?)null
+                                            })
+                                            .ToList();
+
+                    ViewBag.UserEquipments = userEquipments;
                     return View(usr);
                 }
             }
 
+            
             return View(user);
         }
         [HttpPost]
@@ -271,6 +306,22 @@ namespace BerlioWeb.Controllers
         {
             var hasToken = Request.Cookies.ContainsKey("jwtToken");
             return Json(new { isAuthenticated = hasToken });
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ReplenishBalance([FromBody] Equipment model)
+        {
+            try
+            {
+                // Ваша логика обработки пополнения баланса
+                // ...
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
         }
     }
 }
