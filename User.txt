@@ -1,3 +1,4 @@
+Scaffold-DbContext "Host=localhost;Port=5432;Database=BerlioDatabase;Username=postgres;Password=postgres" Npgsql.EntityFrameworkCore.PostgreSQL -OutputDir Models -Force
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;

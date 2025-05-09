@@ -31,8 +31,6 @@ public partial class User
     [StringLength(100, ErrorMessage = "Место заключения договора не должно превышать 100 символов.")]
     public string? PlaceOfTheContract { get; set; }
 
-    public virtual BalancesOfService? BalancesOfService { get; set; }
-
     public bool AreUsersEqualValue(User user2)
     {
         if (user2 == null)
@@ -42,4 +40,10 @@ public partial class User
                Email == user2.Email && Telephone == user2.Telephone &&
                ContractNumber == user2.ContractNumber && PlaceOfTheContract == user2.PlaceOfTheContract;
     }
+    //public virtual BalancesOfService? BalancesOfService { get; set; }
+    public virtual ICollection<BalancesOfService> BalancesOfServices { get; set; } = new List<BalancesOfService>();
+
+    public virtual ICollection<DepositHistory> DepositHistories { get; set; } = new List<DepositHistory>();
+
+    public virtual ICollection<UsersBankCard> UsersBankCards { get; set; } = new List<UsersBankCard>();
 }

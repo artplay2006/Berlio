@@ -3,13 +3,15 @@ using System.Collections.Generic;
 
 namespace BerlioWeb.Models;
 
-public partial class BalancesOfService
+public partial class UsersBankCard
 {
     public int Id { get; set; }
 
-    public string Nameservice { get; set; } = null!;
+    public string Numcard { get; set; } = null!;
 
-    public double Balance { get; set; }
+    public string ValidityPeriod { get; set; } = null!;
+
+    public int Cvc { get; set; }
 
     public string Loginclient { get; set; } = null!;
 

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Dynamic;
+using System.Security.Claims;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace BerlioWeb.Controllers
@@ -59,9 +60,9 @@ namespace BerlioWeb.Controllers
                     }
 
                     await db.OrderSells.AddAsync(orderData);
-                    Console.WriteLine($"{orderData.Id}\n{orderData.Idproduct}\n{orderData.Count}\n{orderData.Client}\n{orderData.Finished}");
+
                     await db.SaveChangesAsync();
-                    //Console.WriteLine($"{orderData.Id}\n{orderData.Idproduct}\n{orderData.Count}\n{orderData.Client}\n{orderData.Finished}");
+                    
                     return Ok(new { success = true });
                 }
             }
@@ -76,6 +77,7 @@ namespace BerlioWeb.Controllers
         {
             try
             {
+                var userLogin = User.FindFirst("userLogin")?.Value;
                 await using (var db = new BerlioDatabaseContext())
                 {
                     // Получаем последний заказ с явным указанием порядка сортировки
@@ -89,6 +91,17 @@ namespace BerlioWeb.Controllers
                     }
 
                     equipmentDelivery.Idordersell = lastOrder.Id;
+
+                    if (db.Equipment.FirstOrDefault(e => e.Id == lastOrder.Idproduct)?.Name == "Электронные карточки")
+                    {
+                        BalancesOfService balancesOfService = new BalancesOfService
+                        {
+                            Nameservice = "Электронные карточки",
+                            Balance = 0,
+                            Loginclient = userLogin
+                        };
+                        await db.BalancesOfServices.AddAsync(balancesOfService);
+                    }
 
                     await db.EquipmentDeliveries.AddAsync(equipmentDelivery);
                     await db.SaveChangesAsync();
@@ -109,6 +122,89 @@ namespace BerlioWeb.Controllers
                 {
                     message = "Произошла ошибка при обработке запроса",
                     detailed = ex.Message
+                });
+            }
+        }
+        [HttpGet]
+        [Route("Product/CheckExisting")]
+        public async Task<IActionResult> CheckExistingDevice()
+        {
+            try
+            {
+                await using (var _context = new BerlioDatabaseContext())
+                {
+                    var userLogin = User.FindFirst("userLogin")?.Value;
+
+                    if (string.IsNullOrEmpty(userLogin))
+                    {
+                        return BadRequest(new { exists = false });
+                    }
+
+                    var exists = await _context.BalancesOfServices
+                        .AnyAsync(bos => bos.Loginclient == userLogin && bos.Nameservice == "BelToll");
+
+                    return Ok(new { exists });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { exists = false, error = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [Route("Product/Register")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RegisterDevice()
+        {
+            try
+            {
+                await using (var _context = new BerlioDatabaseContext())
+                {
+                    var userLogin = User.FindFirst("userLogin")?.Value;
+
+                    if (string.IsNullOrEmpty(userLogin))
+                    {
+                        return BadRequest(new { success = false, message = "Пользователь не авторизован" });
+                    }
+
+                    // Проверяем существование устройства
+                    var existingDevice = await _context.BalancesOfServices
+                        .FirstOrDefaultAsync(bos => bos.Loginclient == userLogin && bos.Nameservice == "BelToll");
+
+                    if (existingDevice != null)
+                    {
+                        return BadRequest(new
+                        {
+                            success = false,
+                            message = "Устройство BelToll уже зарегистрировано для этого пользователя"
+                        });
+                    }
+
+                    // Создаем новое устройство
+                    var newDevice = new BalancesOfService
+                    {
+                        Nameservice = "BelToll", // Исправлено с "Электронные карточки" на "BelToll"
+                        Balance = 0,
+                        Loginclient = userLogin
+                    };
+
+                    await _context.BalancesOfServices.AddAsync(newDevice);
+                    await _context.SaveChangesAsync();
+
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "Бортовое устройство BelToll успешно зарегистрировано"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = $"Внутренняя ошибка сервера: {ex.Message}"
                 });
             }
         }

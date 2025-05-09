@@ -3,13 +3,15 @@ using System.Collections.Generic;
 
 namespace BerlioWeb.Models;
 
-public partial class BalancesOfService
+public partial class DepositHistory
 {
     public int Id { get; set; }
 
-    public string Nameservice { get; set; } = null!;
+    public DateTime Timedeposit { get; set; }
 
-    public double Balance { get; set; }
+    public double Sumofmoney { get; set; }
+
+    public string TypeBalance { get; set; } = null!;
 
     public string Loginclient { get; set; } = null!;
 

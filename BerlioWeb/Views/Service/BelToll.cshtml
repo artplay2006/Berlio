@@ -4,6 +4,102 @@
 @{
     ViewData["Title"] = "BelToll";
 }
+@section Scripts {
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+        document.getElementById('submit').addEventListener('click', async function() {
+            // Проверяем существование устройства перед открытием модального окна
+            const hasExistingDevice = await checkExistingDevice();
+            const modal = new bootstrap.Modal(document.getElementById('registrationModal'));
+            const alertElement = document.getElementById('existingDeviceAlert');
+
+            if (hasExistingDevice) {
+                alertElement.classList.remove('d-none');
+            } else {
+                alertElement.classList.add('d-none');
+            }
+
+            modal.show();
+        });
+
+        document.getElementById('confirmRegistration').addEventListener('click', async function() {
+            const response = await registerDevice();
+
+            if (response.success) {
+                // alert('Устройство успешно зарегистрировано!');
+                $('#registrationModal').modal('hide');
+            } else {
+                alert('Ошибка: ' + response.message);
+            }
+        });
+
+        // Функция проверки существующего устройства
+        async function checkExistingDevice() {
+            try {
+                const response = await fetch('/Product/CheckExisting', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                return data.exists;
+            } catch (error) {
+                console.error('Ошибка проверки устройства:', error);
+                return false;
+            }
+        }
+
+        // Функция регистрации устройства
+        async function registerDevice() {
+            try {
+                const response = await fetch('/Product/Register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                });
+
+                return await response.json();
+            } catch (error) {
+                console.error('Ошибка регистрации:', error);
+                return { success: false, message: 'Ошибка сети' };
+            }
+        }
+</script>
+}
+<style>
+    #registrationModal .modal-content {
+        border-radius: 10px;
+    }
+
+    #registrationModal .modal-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    #registrationModal .modal-body p {
+        font-size: 1.1rem;
+        margin-bottom: 0;
+    }
+
+    #existingDeviceAlert {
+        margin-top: 15px;
+    }
+
+    /* Добавьте в ваш CSS файл */
+    .modal-backdrop {
+        --bs-backdrop-bg: transparent !important;
+        z-index: 1040 !important; /* Стандартное значение, но можно уменьшить */
+    }
+
+    .modal {
+        z-index: 1050 !important; /* Убедитесь, что модальное окно выше бэкдропа */
+    }
+</style>
 
 <div class="payment-container">
     <div class="section-title">
@@ -68,11 +164,31 @@
                         <li>Документ об экологическом классе ТС;</li>
                         <li>Письмо на фирменном бланке организации.</li>
                     </ul>
-                    <a href="#" class="btn doc-btn">ПИСЬМО НА РЕГИСТРАЦИЮ БОРТОВОГО УСТРОЙСТВА</a>
+                    <button id="submit" class="btn doc-btn">ПИСЬМО НА РЕГИСТРАЦИЮ БОРТОВОГО УСТРОЙСТВА</button>
                 </div>
             </div>
         </div>
-
+        <!-- Модальное окно для подтверждения регистрации -->
+        <div class="modal fade" id="registrationModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Регистрация бортового устройства</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Вы уверены, что хотите зарегистрировать бортовое устройство?</p>
+                        <div id="existingDeviceAlert" class="alert alert-warning d-none">
+                            У вас уже есть зарегистрированное устройство!
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Нет</button>
+                        <button type="button" class="btn btn-primary" id="confirmRegistration">Да</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="payment-method">
             <h3>2. Режим предоплаты</h3>
             <div class="method-content">

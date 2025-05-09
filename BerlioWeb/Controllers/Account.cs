@@ -31,8 +31,7 @@ namespace BerlioWeb.Controllers
                 {
                     var usr = await _context.Users.FindAsync(userLogin);
                     if (usr == null) return NotFound();
-                    //_context.OrderSells.Where(os => os.Client == userLogin && os.Type == "Program").Select(os => os.Idproduct)
-                    //_context.Programs.Where(p=>p.Id==/*сюда нужно впихнуть все id из запроса выше*/);
+
                     ViewBag.UserPrograms = _context.Programs
                                             .Where(p => _context.OrderSells
                                             .Any(os => os.Client == userLogin && os.Type == "Program" && os.Idproduct == p.Id))
@@ -50,7 +49,7 @@ namespace BerlioWeb.Controllers
                                                     e.Image,
                                                     os.Count,
                                                     os.Finished,
-                                                    Delivery = os.EquipmentDeliveries.FirstOrDefault() // берем первую запись о доставке
+                                                    Delivery = os.EquipmentDeliveries.FirstOrDefault()
                                                 })
                                             .Select(x => new {
                                                 x.Id,
@@ -65,11 +64,35 @@ namespace BerlioWeb.Controllers
                                             .ToList();
 
                     ViewBag.UserEquipments = userEquipments;
+
+                    if(await _context.OrderSells
+                    .FirstOrDefaultAsync(os => os.Type == "Equipment" &&
+                                             os.Idproduct == _context.Equipment
+                                                 .Where(e => e.Name == "Электронные карточки")
+                                                 .Select(e => e.Id)
+                                                 .FirstOrDefault())!=null)
+                    {
+                        ViewBag.ShowElectronicCardBalance = (await _context.BalancesOfServices.FirstOrDefaultAsync(bs => bs.Loginclient == userLogin)).Balance;
+                    }
+
+                    // проверка на существование балансов
+                    var beltollService = await _context.BalancesOfServices.FirstOrDefaultAsync(bos=>bos.Loginclient==userLogin&&bos.Nameservice=="BelToll");
+                    var elcardsService = await _context.BalancesOfServices.FirstOrDefaultAsync(bos => bos.Loginclient == userLogin && bos.Nameservice == "Электронные карточки");
+                    if (beltollService != null)
+                    {
+                        ViewBag.beltollService = beltollService;
+                    }
+                    if (elcardsService != null)
+                    {
+                        ViewBag.elcardsService = elcardsService;
+                    }
+
+                    var dh = _context.DepositHistories.Where(dh => dh.Loginclient == userLogin).ToList();
+                    ViewBag.PaymentHistory = dh.Count()==0 ? null: dh;
+
                     return View(usr);
                 }
             }
-
-            
             return View(user);
         }
         [HttpPost]
@@ -309,19 +332,83 @@ namespace BerlioWeb.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ReplenishBalance([FromBody] Equipment model)
+        public async Task<IActionResult> ReplenishBalance([FromBody] TopUpBalance model)
         {
             try
             {
-                // Ваша логика обработки пополнения баланса
-                // ...
+                var userLogin = User.FindFirst("userLogin")?.Value;
+                if (string.IsNullOrEmpty(userLogin))
+                {
+                    return BadRequest(new { success = false, message = "Пользователь не авторизован" });
+                }
 
-                return Json(new { success = true });
+                await using (var db = new BerlioDatabaseContext())
+                {
+                    // Начинаем транзакцию
+                    await using var transaction = await db.Database.BeginTransactionAsync();
+
+                    try
+                    {
+                        // 1. Обновляем баланс
+                        var balance = await db.BalancesOfServices
+                            .FirstOrDefaultAsync(bos =>
+                                bos.Loginclient == userLogin &&
+                                bos.Nameservice == model.BalanceType);
+
+                        if (balance == null)
+                        {
+                            return BadRequest(new
+                            {
+                                success = false,
+                                message = "Баланс не найден"
+                            });
+                        }
+
+                        balance.Balance += model.Amount; // Добавляем сумму, а не заменяем
+
+                        // 2. Добавляем запись в историю
+                        await db.DepositHistories.AddAsync(new DepositHistory
+                        {
+                            Timedeposit = DateTime.Now, // Используем текущую дату для операции
+                            Sumofmoney = model.Amount,
+                            TypeBalance = model.BalanceType,
+                            Loginclient = userLogin
+                        });
+
+                        // 3. Сохраняем изменения
+                        await db.SaveChangesAsync();
+                        await transaction.CommitAsync();
+
+                        return Ok(new
+                        {
+                            success = true,
+                            newBalance = balance.Balance
+                        });
+                    }
+                    catch
+                    {
+                        await transaction.RollbackAsync();
+                        throw;
+                    }
+                }
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = $"Ошибка: {ex.Message}"
+                });
             }
+        }
+
+        public class TopUpBalance
+        {
+            public string BalanceType { get; set; }  // Изменено на PascalCase
+            public double Amount { get; set; }
+            public string CardNumber { get; set; }   // Изменено на PascalCase
+            public DateTime ExpiryDate { get; set; } // Изменено на PascalCase
+            public int Cvv { get; set; }
         }
     }
 }
