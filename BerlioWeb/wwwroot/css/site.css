@@ -77,7 +77,7 @@ header {
 }
 
 .leftmenu {
-    width: 40.55vw; /* примерно 778px при ширине viewport 1920px */
+    width: 28vw; /* примерно 778px при ширине viewport 1920px 40.55vw*/
     height: 4.91vh; /* примерно 53px при высоте viewport 1080px */
     background: green;
     display: flex;
@@ -644,6 +644,7 @@ berlio@berlio.by */
         background-color: white;
         padding: 0.78vw;
         margin-top: 3vw;
+        margin-bottom: 3vw;
         border: 1px solid #999;
         border-radius: 5px;
     }
