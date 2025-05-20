@@ -1,4 +1,5 @@
 ﻿using BerlioWeb.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -10,6 +11,12 @@ namespace BerlioWeb.Controllers
 {
     public class Product : Controller
     {
+        private readonly IWebHostEnvironment _env;
+
+        public Product(IWebHostEnvironment env)
+        {
+            _env = env;
+        }
         [HttpPost]
         [Route("Product/{linkShortCut}")]  // Добавляем атрибут маршрутизации
         public IActionResult Index(string linkShortCut, string itemJson)
@@ -206,6 +213,37 @@ namespace BerlioWeb.Controllers
                     success = false,
                     message = $"Внутренняя ошибка сервера: {ex.Message}"
                 });
+            }
+        }
+
+        public async Task<IActionResult> Download(int id)
+        {
+            await using (var db = new BerlioDatabaseContext())
+            {
+                var program = await db.Programs.FirstOrDefaultAsync(p=>p.Id==id);
+                if (program == null)
+                {
+                    return NotFound($"Нет программы с таким id: {id}");
+                }
+            
+                // нужно провести путь до папки wwwroot и там найти файл regional-centre.exe
+                // Получаем путь к папке wwwroot
+                var webRootPath = _env.WebRootPath;
+
+            // Формируем полный путь к файлу
+            var filePath = Path.Combine(webRootPath, "programs", program.Pathtodownload);
+
+            // Проверяем существование файла
+            if (!System.IO.File.Exists(filePath))
+            {
+                return NotFound("Файл не найден");
+            }
+
+            // Определяем MIME-тип для ZIP-архива
+            var mimeType = "application/zip";
+
+            // Возвращаем файл для скачивания
+            return PhysicalFile(filePath, mimeType, program.Pathtodownload);
             }
         }
     }

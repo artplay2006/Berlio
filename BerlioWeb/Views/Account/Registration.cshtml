@@ -14,7 +14,7 @@
     <div class="login-form">
         <h2 class="login-title">Регистрация</h2>
         <form id="registrationForm" asp-action="Registration" method="post">
-            <div class="mb-3">
+            @* <div class="mb-3">
                 <label for="place-of-the-contract" class="form-label">Место заключения договора</label>
                 <select class="form-select" id="place-of-the-contract" name="PlaceOfTheContract">
                     <option value="Берлио Минск (центр 6910)">Берлио Минск (центр 6910)</option>
@@ -49,12 +49,12 @@
                     <option value="УП «Гомельоблгаз» ф-л ПУ «Гомельгаз» (центр 4020)">УП «Гомельоблгаз» ф-л ПУ «Гомельгаз» (центр 4020)</option>
                     <option value="ООО «РОС-ВТС»">ООО «РОС-ВТС»</option>
                 </select>
-            </div>
-            <div class="mb-3">
+            </div> *@
+            @* <div class="mb-3">
                 <label for="contract-number" class="form-label">Номер договора</label>
                 <input type="text" class="form-control" id="contract-number" name="ContractNumber" placeholder="Введите номер договора">
                 <div id="ContractNumberError" class="text-danger" style="display: none;"></div>
-            </div>
+            </div> *@
             <div class="mb-3">
                 <label for="telephone" class="form-label">Номер телефона</label>
                 <input type="text" class="form-control" id="telephone" name="Telephone" placeholder="Введите телефон">

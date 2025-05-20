@@ -226,6 +226,7 @@ namespace BerlioWeb.Controllers
         }
         [HttpPost]
         //[ValidateAntiForgeryToken]
+        //[Route("admin1")]
         public async Task<IActionResult> Authorization(string? Login, string? Password)
         {
             if (string.IsNullOrEmpty(Login))

@@ -1,7 +1,6 @@
 ﻿@model dynamic
 @{
     var typeOfModel = Model.GetType().ToString();
-    Console.WriteLine(typeOfModel);
 }
 
 <div class="productcontent">
@@ -10,11 +9,32 @@
         <div class="product-info">
             <h4>@Html.Raw(Model.Name)</h4>
             <p style="background-color: #e9ecef; padding: 15px; border-radius: 8px;">@Html.Raw(Model.ShortDescription)</p>
-            <button class="product-button" type="button" onclick="openOrderModal()">Заказать</button>
+            @if (Model.GetType() != typeof(BerlioWeb.Models.Program))
+            {
+                <button class="product-button" type="button" onclick="@(Model.Countavailability > 0 ? "openOrderModal()" : "void(0)")"
+                style="@(Model.Countavailability > 0 ? "" : "background-color: #95a5a6; cursor: not-allowed; opacity: 0.6;")">
+                    Заказать</button>
+            }
+            else
+            {
+                <button class="product-button" type="button" onclick="openOrderModal()">Заказать</button>
+            }
         </div>
     </div>
 
-    <div style="margin: 2.5vw 0 0; background-color: white; padding: 20px; border-radius: 10px;">
+    @if (Model.GetType() != typeof(BerlioWeb.Models.Program))
+    {
+        <div style="margin: 0 0 1.25vw; text-align: left;">
+
+            <div style="@(Model.Countavailability > 0 ? "background-color: #2ecc71; color: #27ae60;" : "background-color: #e74c3c; color: #c0392b;") padding: 5px; border-radius: 0 0 5px 5px; display: inline-block;">
+                <i class="@(Model.Countavailability > 0 ? "fas fa-check-circle" : "fas fa-times-circle")" style="margin:0 5px; color: black"><b> @(Model.Countavailability > 0 ? "Есть в наличии" : "Нет в наличии")</b></i>
+               
+            </div>
+        </div>
+    }
+
+    <div style="background-color: white; padding: 20px; border-radius: 10px;">
+        @* margin: 2.5vw 0 0; *@
         <h6 style="font-size: 1vw;">Описание:</h6>
         <p style="font-size: 0.83vw; background-color: #e9ecef; padding: 15px; border-radius: 8px;">
             @Html.Raw(Model.LongDescription)

@@ -14,4 +14,6 @@ public partial class Program
     public string? Image { get; set; }
 
     public int Id { get; set; }
+
+    public string? Pathtodownload { get; set; }
 }

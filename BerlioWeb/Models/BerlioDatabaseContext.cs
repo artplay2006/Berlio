@@ -79,6 +79,7 @@ public partial class BerlioDatabaseContext : DbContext
             entity.HasIndex(e => e.Name, "Equipment_name_key").IsUnique();
 
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Countavailability).HasColumnName("countavailability");
             entity.Property(e => e.Image).HasColumnName("image");
             entity.Property(e => e.LongDescription).HasColumnName("long description");
             entity.Property(e => e.Name).HasColumnName("name");
@@ -130,6 +131,7 @@ public partial class BerlioDatabaseContext : DbContext
             entity.Property(e => e.Image).HasColumnName("image");
             entity.Property(e => e.LongDescription).HasColumnName("long description");
             entity.Property(e => e.Name).HasColumnName("name");
+            entity.Property(e => e.Pathtodownload).HasColumnName("pathtodownload");
             entity.Property(e => e.ShortDescription).HasColumnName("short description");
         });
 

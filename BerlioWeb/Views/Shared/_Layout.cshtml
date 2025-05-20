@@ -14,7 +14,8 @@
 <body>
     @if (ViewContext?.RouteData?.Values["action"]?.ToString() != "Authorization" && 
     ViewContext?.RouteData?.Values["action"]?.ToString() != "Registration" &&
-    ViewContext?.RouteData?.Values["action"]?.ToString() != "Personal")
+    ViewContext?.RouteData?.Values["action"]?.ToString() != "Personal"&&
+    ViewContext?.RouteData?.Values["controller"]?.ToString() != "Admin")
     {
         <header>
             <div class="header-top">
@@ -83,7 +84,8 @@
     @* </div>  *@
     @if (ViewContext?.RouteData?.Values["action"]?.ToString() != "Authorization" && 
     ViewContext?.RouteData?.Values["action"]?.ToString() != "Registration" &&
-    ViewContext?.RouteData?.Values["action"]?.ToString() != "Personal")
+    ViewContext?.RouteData?.Values["action"]?.ToString() != "Personal" &&
+    ViewContext?.RouteData?.Values["controller"]?.ToString() != "Admin")
     {
         <footer class="footer" style="position:relative">
             <div class="container">

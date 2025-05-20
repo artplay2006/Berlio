@@ -14,4 +14,6 @@ public partial class Equipment
     public string? LongDescription { get; set; }
 
     public string? Image { get; set; }
+
+    public int? Countavailability { get; set; }
 }
