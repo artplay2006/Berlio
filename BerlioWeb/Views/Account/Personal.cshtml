@@ -665,13 +665,13 @@
 						<span asp-validation-for="Telephone" class="text-danger"></span>
 					</div>
 
-					<div class="form-group">
+					@* <div class="form-group">
 						<label asp-for="ContractNumber"></label>
 						<input asp-for="ContractNumber" class="form-control" />
 						<span asp-validation-for="ContractNumber" class="text-danger"></span>
-					</div>
+					</div> *@
 
-					<div class="form-group">
+					@* <div class="form-group">
 						<label asp-for="PlaceOfTheContract"></label>
 						<select asp-for="PlaceOfTheContract" class="form-select">
 							<option value="Берлио Минск (центр 6910)">Берлио Минск (центр 6910)</option>
@@ -707,7 +707,7 @@
 							<option value="ООО «РОС-ВТС»">ООО «РОС-ВТС»</option>
 						</select>
 						<span asp-validation-for="PlaceOfTheContract" class="text-danger"></span>
-					</div>
+					</div> *@
 
 					<button type="submit" class="btn btn-primary">Сохранить изменения</button>
 					@if (TempData["UpdateMessage"] != null)

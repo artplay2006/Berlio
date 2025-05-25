@@ -1,0 +1,1760 @@
+﻿@{
+	User? adminAcc = ViewData["adminAcc"] as User;
+	ViewData["Title"] = "Admin";
+}
+@model BerlioWeb.Models.User
+@section Scripts {
+	<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+	<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script>
+		// Изменяем свойство background-color у body
+		// document.body.style.backgroundColor = "DarkBlue";
+		let pendingFormData = null;
+		let isSameName = false;
+		document.addEventListener("DOMContentLoaded", function () {
+				const editableBalances = document.querySelectorAll('.editable-balance');
+
+		editableBalances.forEach(cell => {
+			cell.addEventListener('click', function () {
+				makeEditable(cell);
+			});
+		});
+
+		const menuItems = document.querySelectorAll(".left-menu ul li");
+		const contentItems = document.querySelectorAll(".content-item");
+
+		menuItems.forEach(item => {
+		item.addEventListener("click", function () {
+
+		// Убираем активный класс у всех пунктов меню
+		menuItems.forEach(li => li.classList.remove("active"));
+		// Добавляем активный класс к выбранному пункту
+		item.classList.add("active");
+
+		// Скрываем все блоки контента
+		contentItems.forEach(content => content.classList.remove("active"));
+
+		// Показываем выбранный блок контента
+		const contentId = item.getAttribute("data-content");
+		document.getElementById(contentId).classList.add("active");
+		document.getElementById("mesupdate").innerHTML = "";
+		});
+		});
+		});
+		/////////////////////////////////////////////////////////////////////////
+		
+		let globalBalanceType;
+		document.getElementById('submitReplenish').addEventListener('click', function() {
+				const form = document.getElementById('replenishForm');
+				const inputs = form.querySelectorAll('input[required]');
+				let isValid = true;
+
+				// Сбросить предыдущие ошибки
+				inputs.forEach(input => {
+					input.classList.remove('is-invalid');
+				});
+
+				// Проверить каждое поле
+				inputs.forEach(input => {
+					if (!input.value.trim()) {
+						input.classList.add('is-invalid');
+						isValid = false;
+					}
+
+					// Дополнительные проверки
+					if (input.id === 'cardNumber' && !/^\d{4}\s?\d{4}\s?\d{4}\s?\d{4}$/.test(input.value)) {
+						input.classList.add('is-invalid');
+						isValid = false;
+					}
+
+					if (input.id === 'expiryDate' && !/^\d{2}\/\d{2}$/.test(input.value)) {
+						input.classList.add('is-invalid');
+						isValid = false;
+					}
+				});
+
+				if (!isValid) return;
+
+				// Преобразуем дату в формат ISO
+				const expiryDateStr = document.getElementById('expiryDate').value;
+				const [month, year] = expiryDateStr.split('/');
+				const expiryDate = new Date(`20${year}-${month}-01`).toISOString();
+
+				// Собираем данные формы с правильными именами свойств
+				const formData = {
+					balanceType: globalBalanceType,
+					amount: parseFloat(document.getElementById('amount').value),
+					cardNumber: document.getElementById('cardNumber').value.replace(/\s/g, ''),
+					expiryDate: expiryDate,
+					cvv: parseInt(document.getElementById('cvv').value),
+				};
+
+				// Отправляем AJAX-запрос
+				fetch('/Account/ReplenishBalance', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+					},
+					body: JSON.stringify(formData)
+				})
+				.then(response => {
+					if (!response.ok) throw new Error('Ошибка сети');
+					return response.json();
+				})
+				.then(data => {
+					if (data.success) {
+						location.reload();
+					} else {
+						alert('Ошибка: ' + (data.message || 'Неизвестная ошибка'));
+					}
+				})
+				.catch(error => {
+					console.error('Ошибка:', error);
+					alert('Произошла ошибка при отправке запроса');
+				});
+			});
+		// Маска для номера карты
+		document.getElementById('cardNumber').addEventListener('input', function(e) {
+		this.value = this.value.replace(/\D/g, '')
+		.replace(/(\d{4})(?=\d)/g, '$1 ');
+		});
+
+		// Маска для срока действия
+		document.getElementById('expiryDate').addEventListener('input', function(e) {
+		this.value = this.value.replace(/\D/g, '')
+		.replace(/(\d{2})(?=\d)/g, '$1/')
+		.substring(0, 5);
+		});
+		// Валидация при вводе
+		document.querySelectorAll('#replenishForm input').forEach(input => {
+		input.addEventListener('input', function() {
+		if (this.value.trim()) {
+		this.classList.remove('is-invalid');
+		}
+
+		// Специфические проверки
+		if (this.id === 'cardNumber') {
+		if (/^\d{4}\s?\d{4}\s?\d{4}\s?\d{4}$/.test(this.value)) {
+		this.classList.remove('is-invalid');
+		} else {
+		this.classList.add('is-invalid');
+		}
+		}
+		});
+		});
+		
+
+		// Открытие модального окна ДЛЯ ПРОГРАММЫ
+		function openProgramModal(id = null) {
+			const modal = document.getElementById('programModal');
+			const title = document.getElementById('modalTitle');
+			const form = document.getElementById('programForm');
+
+			if(id) {
+				title.textContent = 'Редактирование программы';
+				fetch(`/Admin/GetProgram/${id}`)
+					.then(response => response.json())
+					.then(data => {
+						form.elements.Id.value = data.id;
+						form.elements.Name.value = data.name;
+						form.elements.ShortDescription.value = data.shortDescription;
+						form.elements.LongDescription.value = data.longDescription;
+						form.elements.Pathtodownload.value = data.pathtodownload;
+						form.elements.Image.value = data.image;
+
+						// Инициализация редактора для полного описания
+						// tinymce.get('LongDescription').setContent(data.longDescription);
+
+						// Загрузка изображения
+						if(data.image) {
+
+							document.getElementById('currentImagePreview').src =
+								`/images/${data.image}`;
+						}
+					});
+			} else {
+				form.elements.Id.value = '';
+				title.textContent = 'Создание программы';
+				form.reset();
+				// tinymce.get('LongDescription').setContent('');
+				document.getElementById('currentImagePreview').src = '/images/default.jpg';
+				form.elements.Image.value = 'default.jpg';
+			}
+
+			modal.style.display = 'block';
+			}
+
+			// Сохранение программы
+			function saveProgram() {
+			// Валидация полей
+			const programName = document.getElementById('ProgramName').value.trim();
+			const exeFile = document.getElementById('NewPathtodownload').files[0];
+			const pathText = document.getElementById('Pathtodownload').value.trim();
+			const errorContainer = document.getElementById('errorContainer');
+
+			// Очистка предыдущих ошибок
+			if (errorContainer) {
+				errorContainer.innerHTML = '';
+				errorContainer.style.display = 'none';
+			}
+
+			let hasErrors = false;
+
+			if (!programName) {
+				showError('Поле "Название программы" обязательно для заполнения');
+				hasErrors = true;
+			}
+
+			if (!exeFile && !pathText) {
+				showError('Выберите файл программы или укажите путь');
+				hasErrors = true;
+			}
+
+			if (hasErrors) return;
+
+			// Сбор данных формы
+			const form = document.getElementById('programForm');
+			const formData = new FormData(form);
+			const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+			formData.append('__RequestVerificationToken', token);
+
+			// Показать индикатор загрузки
+			const saveBtn = document.getElementById('saveProgramBtn');
+			const originalBtnText = saveBtn.innerHTML;
+			saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
+			saveBtn.disabled = true;
+
+			// Определение URL
+			const url = document.getElementById('ProgramId').value
+				? '/Admin/SaveProgram'
+				: '/Admin/AddProgram';
+
+			// Отправка запроса
+			fetch(url, {
+				method: 'POST',
+				body: formData
+			})
+			.then(async response => {
+				if (!response.ok) {
+					const errorData = await response.json();
+					throw new Error(errorData.error || errorData.message || 'Неизвестная ошибка');
+				}
+				return response.json();
+			})
+			.then(data => {
+				if (data.success) {
+					showSuccess('Программа успешно сохранена!');
+					setTimeout(() => location.reload(), 1500);
+				}
+			})
+			.catch(error => {
+				console.error('Ошибка:', error);
+				showError(error.message);
+			})
+			.finally(() => {
+				// Восстановить кнопку
+				saveBtn.innerHTML = originalBtnText;
+				saveBtn.disabled = false;
+			});
+		}
+
+		function handleImagePreview(input) {
+			if (input.files && input.files[0]) {
+				const reader = new FileReader();
+				reader.onload = function(e) {
+					document.getElementById('currentImagePreview').src = e.target.result;
+				}
+				reader.readAsDataURL(input.files[0]);
+			}
+		}
+
+		function handlePathDownloadPreview(input) {
+			if (input.files && input.files[0]) {
+				// Получаем имя файла без пути
+				const fileName = input.files[0].name;
+
+				// Устанавливаем имя файла в текстовое поле
+				document.getElementById('Pathtodownload').value = fileName;
+
+				// Опционально: показываем имя файла где-то еще
+				console.log('Выбран файл:', fileName);
+			}
+		}
+
+		// Закрытие модального окна
+		function closeProgramModal() {
+			document.getElementById('programModal').style.display = 'none';
+		}
+
+		// Показать модальное окно подтверждения
+		function showConfirmModal(message, fileName) {
+			document.getElementById('confirmMessage').textContent = message;
+			document.getElementById('confirmOverwriteModal').style.display = 'block';
+		}
+
+		// Закрыть модальное окно подтверждения
+		function closeConfirmModal() {
+			document.getElementById('confirmOverwriteModal').style.display = 'none';
+			pendingFormData = null;
+		}
+
+		// Подтверждение перезаписи
+				function confirmOverwrite() {
+			if (!pendingFormData) return;
+
+			// Добавляем флаг подтверждения
+			pendingFormData.append('forceOverwrite', 'true');
+
+			fetch('/Admin/SaveProgram', {
+				method: 'POST',
+				body: pendingFormData,
+				headers: {
+					'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+				}
+			})
+			.then(response => response.json())
+			.then(data => {
+				if (data.success) {
+					updateImageAndReload(data.newImage, data.timestamp);
+				} else {
+					showError(data.message);
+				}
+			})
+			.catch(showError)
+			.finally(() => {
+				closeConfirmModal();
+				pendingFormData = null;
+			});
+		}
+				function updateImageAndReload(newImage, timestamp) {
+			if (newImage) {
+				const imgPreview = document.getElementById('currentImagePreview');
+				if (imgPreview) {
+					imgPreview.src = `/images/${newImage}?t=${timestamp}`;
+				}
+			}
+			setTimeout(() => location.reload(), 500);
+		}
+
+				function showError(message) {
+			let errorContainer = document.getElementById('errorContainer');
+
+			if (!errorContainer) {
+				errorContainer = document.createElement('div');
+				errorContainer.id = 'errorContainer';
+				errorContainer.style.position = 'fixed';
+				errorContainer.style.top = '20px';
+				errorContainer.style.right = '20px';
+				errorContainer.style.zIndex = '10000';
+				document.body.appendChild(errorContainer);
+			}
+
+			const errorElement = document.createElement('div');
+			errorElement.className = 'error-message';
+			errorElement.innerHTML = `
+				<div class="error-content">
+					<i class="fas fa-exclamation-circle"></i>
+					<span>${message}</span>
+					<button class="error-close" onclick="this.parentElement.parentElement.remove()">
+						<i class="fas fa-times"></i>
+					</button>
+				</div>
+			`;
+
+			errorContainer.appendChild(errorElement);
+			errorContainer.style.display = 'block';
+
+			// Автоматическое скрытие через 5 секунд
+			setTimeout(() => {
+				errorElement.style.opacity = '0';
+				setTimeout(() => errorElement.remove(), 300);
+			}, 5000);
+		}
+				// Функция для отображения успешных сообщений
+		function showSuccess(message) {
+			let successContainer = document.getElementById('successContainer');
+
+			if (!successContainer) {
+				successContainer = document.createElement('div');
+				successContainer.id = 'successContainer';
+				successContainer.style.position = 'fixed';
+				successContainer.style.top = '20px';
+				successContainer.style.right = '20px';
+				successContainer.style.zIndex = '10000';
+				document.body.appendChild(successContainer);
+			}
+
+			const successElement = document.createElement('div');
+			successElement.className = 'success-message';
+			successElement.innerHTML = `
+				<div class="success-content">
+					<i class="fas fa-check-circle"></i>
+					<span>${message}</span>
+					<button class="success-close" onclick="this.parentElement.parentElement.remove()">
+						<i class="fas fa-times"></i>
+					</button>
+				</div>
+			`;
+
+			successContainer.appendChild(successElement);
+			successContainer.style.display = 'block';
+
+			// Автоматическое скрытие через 3 секунды
+			setTimeout(() => {
+				successElement.style.opacity = '0';
+				setTimeout(() => successElement.remove(), 300);
+			}, 3000);
+		}
+
+		// Удаление программы
+		function deleteProgram(id) {
+			if(confirm('Вы уверены, что хотите удалить программу?')) {
+				fetch(`/Admin/DeleteProgram/${id}`, {
+					method: 'POST',
+					headers: {
+						'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+					}
+				})
+				.then(response => location.reload());
+			}
+		}
+
+		// Просмотр полного описания
+		function toggleDescription(element) {
+			const fullDesc = element.querySelector('.full-description');
+			fullDesc.style.display = fullDesc.style.display === 'block' ? 'none' : 'block';
+		}
+
+		// Превью изображения
+		document.getElementById('ImageUpload').addEventListener('change', function(e) {
+			const preview = document.getElementById('ImagePreview');
+			if(this.files && this.files[0]) {
+				const reader = new FileReader();
+				reader.onload = function(e) {
+					preview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+				}
+				reader.readAsDataURL(this.files[0]);
+			}
+		});
+
+		// ВСЕ ДЛЯ ОБОРУДОВАНИя
+				// Открытие модального окна для оборудования
+		function openEquipmentModal(id = null) {
+			const modal = document.getElementById('equipmentModal');
+			const title = document.getElementById('equipmentModalTitle');
+			const form = document.getElementById('equipmentForm');
+
+			if(id) {
+				title.textContent = 'Редактирование оборудования';
+				fetch(`/Admin/GetEquipment/${id}`)
+					.then(response => response.json())
+					.then(data => {
+						form.elements.Id.value = data.id;
+						form.elements.Name.value = data.name;
+						form.elements.ShortDescription.value = data.shortDescription;
+						form.elements.LongDescription.value = data.longDescription;
+						form.elements.Countavailability.value = data.countavailability;
+						form.elements.Image.value = data.image;
+
+						// Загрузка изображения
+						if(data.image) {
+							document.getElementById('currentEquipmentImagePreview').src = `/images/${data.image}`;
+						}
+					});
+			} else {
+				form.elements.Id.value = '';
+				title.textContent = 'Создание оборудования';
+				form.reset();
+				document.getElementById('currentEquipmentImagePreview').src = '/images/default.jpg';
+				form.elements.Image.value = 'default.jpg';
+			}
+
+			modal.style.display = 'block';
+		}
+
+		// Закрытие модального окна
+		function closeEquipmentModal() {
+			document.getElementById('equipmentModal').style.display = 'none';
+		}
+
+		// Превью изображения оборудования
+		function handleEquipmentImagePreview(input) {
+			if (input.files && input.files[0]) {
+				const reader = new FileReader();
+				reader.onload = function(e) {
+					document.getElementById('currentEquipmentImagePreview').src = e.target.result;
+				}
+				reader.readAsDataURL(input.files[0]);
+			}
+		}
+				function validateEquipmentCount(input) {
+			if (input.value < 0) {
+				input.value = 0;
+			}
+		}
+
+		// Сохранение оборудования
+				function saveEquipment() {
+			// Валидация полей
+			const equipmentName = document.getElementById('EquipmentName').value.trim();
+			const equipmentCount = parseInt(document.getElementById('EquipmentCount').value);
+			const errorContainer = document.getElementById('errorContainer');
+
+			// Очистка предыдущих ошибок
+			if (errorContainer) {
+				errorContainer.innerHTML = '';
+				errorContainer.style.display = 'none';
+			}
+
+			let hasErrors = false;
+
+			if (!equipmentName) {
+				showError('Поле "Название оборудования" обязательно для заполнения');
+				hasErrors = true;
+			}
+
+			if (isNaN(equipmentCount) || equipmentCount < 0) {
+				showError('Укажите корректное количество (0 или больше)');
+				hasErrors = true;
+			}
+
+			if (hasErrors) return;
+
+			// Сбор данных формы
+			const form = document.getElementById('equipmentForm');
+			const formData = new FormData(form);
+
+			// Добавляем CSRF-токен
+			const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+			formData.append('__RequestVerificationToken', token);
+
+			// Показать индикатор загрузки
+			const saveBtn = document.getElementById('saveEquipmentBtn');
+			const originalBtnText = saveBtn.innerHTML;
+			saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
+			saveBtn.disabled = true;
+
+			// Определение URL
+			const isEditMode = !!document.getElementById('EquipmentId').value;
+			const url = isEditMode ? '/Admin/SaveEquipment' : '/Admin/AddEquipment';
+
+			// Отправка запроса
+			fetch(url, {
+				method: 'POST',
+				body: formData
+			})
+			.then(async response => {
+				const data = await response.json();
+				if (!response.ok) {
+					throw new Error(data.error || data.message || 'Неизвестная ошибка');
+				}
+				return data;
+			})
+			.then(data => {
+				if (data.success) {
+					showSuccess('Оборудование успешно сохранено!');
+					setTimeout(() => location.reload(), 1500);
+				}
+			})
+			.catch(error => {
+				console.error('Ошибка:', error);
+				showError(error.message);
+			})
+			.finally(() => {
+				saveBtn.innerHTML = originalBtnText;
+				saveBtn.disabled = false;
+			});
+		}
+
+		// Удаление оборудования
+		function deleteEquipmentModal(id) {
+			if(confirm('Вы уверены, что хотите удалить оборудование?')) {
+				fetch(`/Admin/DeleteEquipment/${id}`, {
+					method: 'POST',
+					headers: {
+						'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+					}
+				})
+				.then(response => location.reload());
+			}
+		}
+
+		function makeEditable(cell) {
+			const originalValue = cell.getAttribute('data-original-value');
+			const input = document.createElement('input');
+			input.className = 'balance-input';
+			input.value = originalValue;
+			input.type = 'number';
+			input.step = '0.01';
+			input.addEventListener('blur', function () {
+				saveBalance(cell, input);
+			});
+			input.addEventListener('keydown', function (e) {
+				if (e.key === 'Enter') {
+					saveBalance(cell, input);
+				}
+			});
+
+			cell.innerHTML = '';
+			cell.appendChild(input);
+			input.focus();
+		}
+
+				function saveBalance(cell, input) {
+			const newValue = input.value.trim();
+			const programId = cell.closest('tr').getAttribute('data-program-id');
+
+			if (isNaN(newValue)) {
+				showError("Баланс должен быть числом");
+				restoreOriginalValue(cell, cell.getAttribute('data-original-value'));
+				return;
+			}
+
+			fetch('/Admin/UpdateBalance', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+				},
+				body: JSON.stringify({
+					ProgramId: parseInt(programId, 10),
+					NewBalance: parseFloat(newValue)
+				})
+			})
+			.then(response => response.json())
+			.then(data => {
+				if (data.success) {
+					cell.setAttribute('data-original-value', newValue);
+					cell.innerHTML = `${newValue} BYN`;
+				} else {
+					showError(data.message || 'Неизвестная ошибка');
+					restoreOriginalValue(cell, cell.getAttribute('data-original-value'));
+				}
+			})
+			.catch(error => {
+				console.error('Ошибка:', error);
+				showError('Произошла ошибка при сохранении');
+				restoreOriginalValue(cell, cell.getAttribute('data-original-value'));
+			});
+		}
+
+		function restoreOriginalValue(cell, originalValue) {
+			cell.innerHTML = `${originalValue} BYN`;
+		}
+	</script>
+}
+<style>
+	.error-message {
+		background: #f8d7da;
+		color: #721c24;
+		padding: 15px;
+		margin-bottom: 10px;
+		border-radius: 5px;
+		box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+		display: flex;
+		align-items: center;
+		animation: slideIn 0.15s ease-out;
+		transition: opacity 0.15s;
+	}
+
+	.success-message {
+		background: #d4edda;
+		color: #155724;
+		padding: 15px;
+		margin-bottom: 10px;
+		border-radius: 5px;
+		box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+		display: flex;
+		align-items: center;
+		animation: slideIn 0.15s ease-out;
+		transition: opacity 0.15s;
+	}
+
+	.error-content, .success-content {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
+
+		.error-content i {
+			color: #dc3545;
+			font-size: 1.2em;
+		}
+
+		.success-content i {
+			color: #28a745;
+			font-size: 1.2em;
+		}
+
+	.error-close, .success-close {
+		background: none;
+		border: none;
+		color: inherit;
+		cursor: pointer;
+		margin-left: auto;
+		padding: 0 5px;
+	}
+
+	@@keyframes slideIn {
+		from
+
+	{
+		transform: translateX(100%);
+		opacity: 0;
+	}
+
+	to {
+		transform: translateX(0);
+		opacity: 1;
+	}
+
+	}
+	.compare-image {
+		max-width: 200px;
+		max-height: 150px;
+		border: 1px solid #ddd;
+		margin: 10px 0;
+	}
+
+	.image-comparison {
+		display: flex;
+		justify-content: space-around;
+		margin-top: 20px;
+	}
+
+	.program-image-preview {
+		transition: opacity 0.3s ease;
+	}
+
+		.program-image-preview.updating {
+			opacity: 0.7;
+		}
+	/* Основные стили админской панели */
+	body {
+		background: #0a0a1a;
+		color: #e0e0ff;
+	}
+
+	.header-top {
+		/* background: linear-gradient(45deg, #1a1a2e, #16213e); */
+		/* border-bottom: 2px solid #e94560; */
+	}
+
+	.left-menu {
+		background: #1a1a2e;
+		border-right: 2px solid #2d4059;
+	}
+
+		.left-menu ul li {
+			color: #b8c2cc;
+			border-left: 4px solid transparent;
+			transition: all 0.3s;
+		}
+
+			.left-menu ul li.active {
+				background: #16213e;
+				border-left-color: #e94560;
+				color: #fff;
+			}
+
+			.left-menu ul li:hover {
+				background: #16213e;
+				color: #fff;
+			}
+
+	.content {
+		background: rgba(26, 26, 46, 0.9);
+		border: 1px solid #2d4059;
+		box-shadow: 0 0 20px rgba(233, 69, 96, 0.1);
+	}
+
+	/* Стили карточек */
+	.program-card,
+	.equipment-card,
+	.balance-card {
+		background: #16213e;
+		border: 1px solid #2d4059;
+		box-shadow: 0 4px 15px rgba(233, 69, 96, 0.1);
+	}
+
+		.program-card:hover,
+		.equipment-card:hover,
+		.balance-card:hover {
+			transform: translateY(-3px);
+			box-shadow: 0 6px 20px rgba(233, 69, 96, 0.2);
+		}
+
+	/* Заголовки */
+	h2 {
+		color: #e94560;
+		border-bottom: 1px solid #e0e0ff;
+		padding-bottom: 10px;
+		position: relative;
+	}
+
+	/* Формы */
+	.form-control {
+		background: #1a1a2e;
+		border: 1px solid #2d4059;
+		color: #fff;
+	}
+
+		.form-control:focus {
+			border-color: #e94560;
+			box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.25);
+		}
+
+	/* Кнопки */
+	.btn-primary {
+		background: #e94560;
+		border: none;
+		transition: all 0.3s;
+	}
+
+		.btn-primary:hover {
+			background: #d13354;
+			transform: scale(1.05);
+		}
+
+	.btn-admin, .btn-save, .btn-cancel {
+		color: #e0e0ff;
+	}
+
+		.btn-admin:hover, .btn-save:hover, .btn-cancel:hover {
+			color: #d13354;
+		}
+
+	.btn-confirm {
+		background: #e94560;
+		color: white;
+		border: none;
+		padding: 10px 20px;
+		border-radius: 5px;
+		cursor: pointer;
+	}
+
+		.btn-confirm:hover {
+			background: #d93550;
+		}
+
+	/* Предупреждающие элементы */
+	.admin-warning {
+		position: fixed;
+		bottom: 20px;
+		right: 20px;
+		background: rgba(233, 69, 96, 0.1);
+		padding: 15px;
+		border-radius: 8px;
+		border: 1px solid #e94560;
+		color: #e94560;
+		font-size: 0.9em;
+	}
+
+	/* Анимации */
+	@@keyframes admin-pulse {
+		0% {
+			box-shadow: 0 0 0 0 rgba(233, 69, 96, 0.4);
+		}
+
+		70% {
+			box-shadow: 0 0 0 15px rgba(233, 69, 96, 0);
+		}
+
+		100% {
+			box-shadow: 0 0 0 0 rgba(233, 69, 96, 0);
+		}
+	}
+
+	.header-account {
+		animation: admin-pulse 2s infinite;
+		border: 1px solid #e94560 !important;
+	}
+
+	/* Водяной знак */
+	body::after {
+		content: "ADMIN PANEL";
+		position: fixed;
+		bottom: 20%;
+		left: -50px;
+		color: rgba(233, 69, 96, 0.05);
+		font-size: 120px;
+		transform: rotate(-45deg);
+		z-index: -1;
+		pointer-events: none;
+	}
+	/* Стили таблицы */
+	.editable-balance {
+		cursor: pointer;
+		position: relative;
+	}
+
+		.editable-balance:hover {
+			background-color: rgba(233, 69, 96, 0.1);
+		}
+
+	.balance-input {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		border: none;
+		background: #2d4059;
+		color: #e0e0ff;
+		padding: 0 12px;
+		box-sizing: border-box;
+		font-size: inherit;
+	}
+	.admin-table-container {
+		background: #1a1a2e;
+		border-radius: 8px;
+		overflow: hidden;
+		margin-top: 20px;
+	}
+
+	.admin-table {
+		width: 100%;
+		border-collapse: collapse;
+		color: #e0e0ff;
+	}
+
+		.admin-table th {
+			background: #e94560;
+			padding: 15px;
+			text-align: left;
+		}
+
+		.admin-table td {
+			padding: 12px;
+			border-bottom: 1px solid #2d4059;
+		}
+
+		.admin-table tr:hover {
+			background: rgba(233, 69, 96, 0.05);
+		}
+
+	.btn-edit, .btn-delete {
+		border: none;
+		padding: 6px 12px;
+		margin: 0 3px;
+		cursor: pointer;
+		border-radius: 4px;
+		transition: transform 0.2s;
+	}
+
+	.btn-edit {
+		background: #4a6fa5;
+		color: white;
+	}
+
+	.btn-delete {
+		background: #e94560;
+		color: white;
+	}
+
+		.btn-edit:hover, .btn-delete:hover {
+			transform: scale(1.1);
+		}
+
+	.program-thumbnail {
+		width: 50px;
+		height: 50px;
+		object-fit: cover;
+		border-radius: 4px;
+	}
+
+	.expandable {
+		cursor: pointer;
+		position: relative;
+		max-width: 250px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.full-description {
+		display: none;
+		position: absolute;
+		background: #16213e;
+		border: 1px solid #e94560;
+		padding: 10px;
+		z-index: 1000;
+		max-width: 400px;
+		border-radius: 6px;
+		box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+	}
+
+	/* Модальное окно */
+	.admin-modal {
+		display: none;
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: rgba(0,0,0,0.7);
+		z-index: 2000;
+	}
+
+	.admin-modal-content {
+		background: #1a1a2e;
+		width: 600px;
+		margin: 50px auto;
+		border-radius: 8px;
+		animation: modalSlide 0.3s ease-out;
+	}
+
+	@@keyframes modalSlide {
+		from {
+			transform: translateY(-50px);
+			opacity: 0;
+		}
+
+		to {
+			transform: translateY(0);
+			opacity: 1;
+		}
+	}
+
+	.admin-modal-header {
+		padding: 20px;
+		border-bottom: 1px solid #2d4059;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.admin-modal-close {
+		cursor: pointer;
+		font-size: 24px;
+		color: #e94560;
+	}
+
+	.admin-modal-body {
+		padding: 20px;
+	}
+
+	.image-preview {
+		margin-top: 10px;
+	}
+
+		.image-preview img {
+			max-width: 100px;
+			max-height: 100px;
+			border-radius: 4px;
+		}
+
+	.admin-form-row {
+		display: flex;
+		gap: 15px;
+		margin-bottom: 20px;
+	}
+
+	.admin-form-group {
+		flex: 1;
+	}
+
+	.w-100 {
+		width: 100%;
+	}
+
+	.w-60 {
+		width: 60%;
+	}
+
+	.w-50 {
+		width: 50%;
+	}
+
+	.w-40 {
+		width: 40%;
+	}
+
+	.file-upload-container {
+		border: 2px dashed #2d4059;
+		padding: 20px;
+		border-radius: 8px;
+		margin-top: 10px;
+	}
+
+	.drop-zone {
+		padding: 15px;
+		text-align: center;
+		color: #6c757d;
+		cursor: pointer;
+		transition: background 0.3s;
+	}
+
+		.drop-zone:hover {
+			background: rgba(45, 64, 89, 0.1);
+		}
+
+	.image-preview {
+		display: flex;
+		gap: 20px;
+		margin-top: 15px;
+	}
+
+		.image-preview img {
+			max-width: 200px;
+			max-height: 150px;
+			border-radius: 6px;
+			object-fit: contain;
+		}
+
+	.current-image, .new-image {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.char-counter {
+		font-size: 0.85em;
+		color: #6c757d;
+		text-align: right;
+		margin-top: 5px;
+	}
+
+	.validation-message {
+		color: #e94560;
+		font-size: 0.9em;
+		margin-top: 5px;
+		display: none;
+	}
+
+	.tox-tinymce {
+		border-radius: 6px !important;
+		border: 1px solid #2d4059 !important;
+		margin-top: 5px;
+	}
+
+	.productcontent {
+		color: black;
+		margin: 0 0;
+		padding: 10px;
+	}
+
+	.program-image-preview {
+		width: 100%;
+		height: 200px;
+		object-fit: contain;
+		border: 2px dashed #2d4059;
+		border-radius: 8px;
+	}
+
+	.fields-column {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 15px;
+	}
+
+	.maininfoproduct img {
+		height: 18vh;
+		width: 17vw;
+		margin-right: 0;
+	}
+
+	.image-upload-container {
+		display: flex;
+		align-items: flex-start;
+		margin-bottom: 20px;
+	}
+
+	.image-upload-controls {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.image-column {
+		flex: 0 0 250px;
+		display: flex;
+		flex-direction: column;
+		gap: 15px;
+	}
+
+	.btn-upload {
+		width: 100%;
+		text-align: center;
+		background: #4a6fa5;
+		color: white;
+		padding: 10px;
+		border-radius: 5px;
+		cursor: pointer;
+		transition: background 0.3s;
+	}
+
+		.btn-upload:hover {
+			background: #3a5a85;
+		}
+
+	.description-container {
+		background: white;
+		padding: 20px;
+		border-radius: 10px;
+		margin-top: 20px;
+	}
+
+	.admin-form-group {
+		/* margin-bottom: 15px; */
+	}
+
+	.admin-form-control {
+		width: 100%;
+		padding: 10px;
+		border: 1px solid #2d4059;
+		border-radius: 5px;
+		background: #1a1a2e;
+		color: white;
+	}
+
+	.tox-tinymce {
+		border-radius: 8px !important;
+		margin-top: 10px;
+	}
+
+	.maininfoproduct {
+		display: flex;
+		gap: 5px;
+		margin-bottom: 10px;
+	}
+
+	.description-container {
+		padding: 0;
+		margin-top: 0;
+	}
+
+	.description-section {
+		background: white;
+		/* padding: 20px; */
+		border-radius: 10px;
+		display: flex;
+		flex-direction: column;
+		/* gap: 20px; */
+	}
+</style>
+<header style="">
+	<div class="header-top" style="margin: 3vh 0 3vh 0vw;">
+		<a style="text-decoration: none;
+    color: inherit;    border: white solid 1px;
+    border-radius: 10px;
+    padding: 10px;" asp-area="" asp-controller="Admin" asp-action="AdminPanel"><h3 style="color:white">Администраторская панель</h3></a>
+		<a style="text-decoration: none;
+    color: inherit;" asp-area="" asp-controller="" asp-action="">
+			<div class="header-account dropdown" style="border: white solid 1px;
+    border-radius: 10px;
+    padding: 10px 0;">
+				<div class="dropdown">
+					<img src="~/images/account.png" class="account" style="margin: 0vh 0 0vh 0vw;padding-left:1vw;">
+					<b style="margin-bottom: 0; color:white;padding-left:1vw;padding-right: 1vw;">@adminAcc.Login</b>
+					<p style="color:white;margin-bottom: 0;margin-top:0.13vw;
+    margin-left: 50%;">▼</p>
+					<ul class="dropdown-menu">
+						<li><a class="dropdown-item" asp-controller="Home" asp-action="Index">Главная</a></li>
+						<li>
+							<form asp-controller="Account" asp-action="Logout" method="post">
+								@Html.AntiForgeryToken()
+								<button type="submit" class="dropdown-item" style="background:none; border:none; width:100%; text-align:left">
+									Выйти из акк
+								</button>
+							</form>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</a>
+	</div>
+</header>
+<div class="allinpersonal" style="border-top: 2px solid #e94560;">
+	<div class="left-menu">
+		<ul>
+			<li data-content="settings" class="active">Настройки пользователя</li>
+			<li data-content="users">Пользователи</li>
+			<li data-content="equipmentdelivery">Доставки оборудования</li>
+			<li data-content="ordersells">Покупки и заказы</li>
+			<li data-content="deposithistories">История пополнения балансов</li>
+			<li data-content="balances">Балансы</li>
+			<li data-content="equipments">Оборудование</li>
+			<li data-content="programs">Программы</li>
+		</ul>
+	</div>
+	<!-- Контент -->
+	<div class="content">
+		<div id="settings" style="background-color: #87878778;" class="content-item active">
+			<h2>Настройки пользователя</h2>
+			<p>Здесь вы можете изменить свои настройки.</p>
+			<form method="post" action="/Account/UpdateUserSettings">
+				<div class="form-group">
+					<label asp-for="Login"></label>
+					<input asp-for="Login" class="form-control" value="@adminAcc.Login" readonly />
+					<span asp-validation-for="Login" class="text-danger"></span>
+				</div>
+
+				<div class="form-group">
+					<label asp-for="Password"></label>
+					<input asp-for="Password" type="password" class="form-control" value="@adminAcc.Password" />
+					<span asp-validation-for="Password" class="text-danger"></span>
+				</div>
+
+				<div class="form-group">
+					<label asp-for="Email"></label>
+					<input asp-for="Email" class="form-control" value="@adminAcc.Email" />
+					<span asp-validation-for="Email" class="text-danger"></span>
+				</div>
+
+				<div class="form-group">
+					<label asp-for="Telephone"></label>
+					<input asp-for="Telephone" class="form-control" value="@adminAcc.Telephone" />
+					<span asp-validation-for="Telephone" class="text-danger"></span>
+				</div>
+
+				<button type="submit" class="btn btn-primary">Сохранить изменения</button>
+				@if (TempData["UpdateMessage"] != null)
+				{
+					<div id="mesupdate" style="text-align: right;
+    border: none;
+    background-color: transparent;
+    color: black;
+    font-size: 1.04vw;" class="alert alert-info">
+						@TempData["UpdateMessage"]
+					</div>
+				}
+			</form>
+		</div>
+		<div id="users" style="background-color: #87878778;" class="content-item">
+			<h2>Пользователи</h2>
+			<div class="admin-table-controls">
+			</div>
+			<div class="admin-table-container">
+				<table class="admin-table">
+					<thead>
+						<tr>
+							<th>Логин</th>
+							<th>Пароль</th>
+							<th>E-mail</th>
+							<th>Номер телефона</th>
+							<th>Роль</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (User dh in ViewBag.Users ?? new List<User>())
+						{
+							<tr data-program-id="@dh.Login">
+								<td>@dh.Login</td>
+								<td>@dh.Password</td>
+								<td>@dh.Email</td>
+								<td>@dh.Telephone</td>
+								<td>@dh.Role</td>
+								@* <td class="editable-balance" data-original-value="@dh.Sumofmoney">
+									@string.Format("{0:0.00} BYN", dh.Sumofmoney)
+								</td> *@
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div id="equipmentdelivery" style="background-color: #87878778;" class="content-item">
+			<h2>Доставки оборудования</h2>
+			<div class="admin-table-controls">
+			</div>
+			<div class="admin-table-container">
+				<table class="admin-table">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>ID заказа</th>
+							<th>Адрес доставки</th>
+							<th>Время доставки</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (EquipmentDelivery dh in ViewBag.EquipmentDelivery ?? new List<EquipmentDelivery>())
+						{
+							<tr data-program-id="@dh.Id">
+								<td>@dh.Id</td>
+								<td>@dh.Idordersell</td>
+								<td>@dh.Addressdelivery</td>
+								<td>@dh.Timedelivery</td>
+								@* <td class="editable-balance" data-original-value="@dh.Sumofmoney">
+									@string.Format("{0:0.00} BYN", dh.Sumofmoney)
+								</td> *@
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div id="ordersells" style="background-color: #87878778;" class="content-item">
+			<h2>Покупки и заказы</h2>
+			<div class="admin-table-controls">
+			</div>
+			<div class="admin-table-container">
+				<table class="admin-table">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>ID продукта</th>
+							<th>Количество</th>
+							<th>Закончен</th>
+							<th>Тип</th>
+							<th>Клиент</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (OrderSell dh in ViewBag.OrderSell ?? new List<OrderSell>())
+						{
+							<tr data-program-id="@dh.Id">
+								<td>@dh.Id</td>
+								<td>@dh.Idproduct</td>
+								<td>@dh.Count</td>
+								<td>@dh.Finished</td>
+								@* <td class="editable-balance" data-original-value="@dh.Sumofmoney">
+									@string.Format("{0:0.00} BYN", dh.Sumofmoney)
+								</td> *@
+								<td>@dh.Type</td>
+								<td>@dh.Client</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div id="deposithistories" style="background-color: #87878778;" class="content-item">
+			<h2>История пополнения балансов</h2>
+			<div class="admin-table-controls">
+			</div>
+			<div class="admin-table-container">
+				<table class="admin-table">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Дата и время</th>
+							<th>Сумма пополнения</th>
+							<th>Тип баланса</th>
+							<th>Клиент</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (DepositHistory dh in ViewBag.DepositHistory ?? new List<DepositHistory>())
+						{
+							<tr data-program-id="@dh.Id">
+								<td>@dh.Id</td>
+								<td>@dh.Timedeposit</td>
+								<td class="editable-balance" data-original-value="@dh.Sumofmoney">
+									@string.Format("{0:0.00} BYN", dh.Sumofmoney)
+								</td>
+								<td>@dh.TypeBalance</td>
+								<td>@dh.Loginclient</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div id="balances" style="background-color: #87878778;" class="content-item">
+			<h2>Управление балансами</h2>
+			<div class="admin-table-controls">
+			</div>
+			<div class="admin-table-container">
+				<table class="admin-table">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Название</th>
+							<th>Баланс</th>
+							<th>Клиент</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var balance in ViewBag.Balances ?? new List<BalancesOfService>())
+						{
+							<tr data-program-id="@balance.Id">
+								<td>@balance.Id</td>
+								<td>@balance.Nameservice</td>
+								<td class="editable-balance" data-original-value="@balance.Balance">
+									@string.Format("{0:0.00} BYN", balance.Balance)
+								</td>
+								<td>@balance.Loginclient</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div id="equipments" style="background-color: #87878778;" class="content-item">
+			<h2>Оборудование</h2>
+			<div class="admin-table-controls">
+				<button class="btn btn-admin" onclick="openEquipmentModal()">
+					<i class="fas fa-plus"></i> Добавить оборудование
+				</button>
+			</div>
+			<div class="admin-table-container">
+				<table class="admin-table">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Название</th>
+							@* <th>Короткое описание</th> *@
+							<th>Изображение</th>
+							<th>Количество</th>
+							<th>Действия</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var equipment in ViewBag.Equipments ?? new List<Equipment>())
+						{
+							<tr data-program-id="@equipment.Id">
+								<td>@equipment.Id</td>
+								<td>@equipment.Name</td>
+								@* <td class="expandable" onclick="toggleDescription(this)">
+									@program.ShortDescription
+									<div class="full-description">@program.LongDescription</div>
+								</td> *@
+								<td>
+									@if (!string.IsNullOrEmpty(equipment.Image))
+									{
+										<img src="~/images/@equipment.Image" class="program-thumbnail">
+									}
+								</td>
+								<td>@equipment.Countavailability</td>
+								<td>
+									<button class="btn-edit" onclick="openEquipmentModal(@equipment.Id)">
+										<i class="fas fa-edit"></i>
+									</button>
+									<button class="btn-delete" onclick="deleteEquipmentModal(@equipment.Id)">
+										<i class="fas fa-trash"></i>
+									</button>
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+			<!-- Модальное окно редактирования -->
+			<div id="equipmentModal" class="admin-modal">
+				<div class="admin-modal-content">
+					<div class="admin-modal-header">
+						<h3><span id="equipmentModalTitle">Создание оборудования</span></h3>
+						<span class="admin-modal-close" onclick="closeEquipmentModal()">&times;</span>
+					</div>
+					<form id="equipmentForm" enctype="multipart/form-data">
+						<div class="productcontent">
+							<div class="maininfoproduct">
+								<!-- Левая колонка с изображением -->
+								<div class="image-column">
+									<input type="hidden" id="currentEquipmentImageHidden" name="Image">
+									<img id="currentEquipmentImagePreview" src="" class="program-image-preview">
+									<div class="image-upload-controls">
+										<input type="file" id="EquipmentImageUpload" name="NewImage"
+											   accept="image/*" onchange="handleEquipmentImagePreview(this)">
+									</div>
+								</div>
+
+								<!-- Правая колонка с полями -->
+								<div class="fields-column">
+									<input type="hidden" id="EquipmentId" name="Id">
+
+									<div class="admin-form-group">
+										<label>Название оборудования:</label>
+										<input type="text" id="EquipmentName" name="Name"
+											   class="admin-form-control" required>
+										<div class="validation-message"></div>
+									</div>
+
+									<div class="admin-form-group">
+										<label>Количество:</label>
+										<input type="number" id="EquipmentCount" name="Countavailability"
+											   class="admin-form-control" required min="0"
+											   oninput="this.value = Math.max(0, parseInt(this.value)) || 0">
+									</div>
+								</div>
+							</div>
+							<!-- Нижняя часть с описаниями -->
+							<div class="description-section">
+								<div class="admin-form-group">
+									<label>Короткое описание:</label>
+									<textarea id="ShortDescription" name="ShortDescription"
+											  class="admin-form-control" rows="3"
+											  maxlength="255"></textarea>
+								</div>
+
+								<div class="admin-form-group">
+									<label>Полное описание:</label>
+									<textarea style="height: 36.72612801678909vh;" id="LongDescription" name="LongDescription"
+											  class="admin-form-control rich-editor"></textarea>
+								</div>
+							</div>
+						</div>
+
+						<div class="admin-modal-footer">
+							<button id="saveEquipmentBtn" type="button" class="btn btn-save" onclick="saveEquipment()">
+								<i class="fas fa-save"></i> Сохранить
+							</button>
+							<button type="button" class="btn btn-cancel" onclick="closeEquipmentModal()">
+								Отмена
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<div id="programs" style="background-color: #87878778;" class="content-item">
+			<h2>Управление программами</h2>
+
+			<div class="admin-table-controls">
+				<button class="btn btn-admin" onclick="openProgramModal()">
+					<i class="fas fa-plus"></i> Добавить программу
+				</button>
+			</div>
+
+			<div class="admin-table-container">
+				<table class="admin-table">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Название</th>
+							@* <th>Короткое описание</th> *@
+							<th>Изображение</th>
+							<th>Путь</th>
+							<th>Действия</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var program in ViewBag.Programs ?? new List<Program>())
+						{
+							<tr data-program-id="@program.Id">
+								<td>@program.Id</td>
+								<td>@program.Name</td>
+								@* <td class="expandable" onclick="toggleDescription(this)">
+									@program.ShortDescription
+									<div class="full-description">@program.LongDescription</div>
+								</td> *@
+								<td>
+									@if (!string.IsNullOrEmpty(program.Image))
+									{
+										<img src="~/images/@program.Image" class="program-thumbnail">
+									}
+								</td>
+								<td>@program.Pathtodownload</td>
+								<td>
+									<button class="btn-edit" onclick="openProgramModal(@program.Id)">
+										<i class="fas fa-edit"></i>
+									</button>
+									<button class="btn-delete" onclick="deleteProgram(@program.Id)">
+										<i class="fas fa-trash"></i>
+									</button>
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+			<!-- Модальное окно редактирования -->
+			<div id="programModal" class="admin-modal">
+				<div class="admin-modal-content">
+					<div class="admin-modal-header">
+						<h3><span id="modalTitle">Создание программы</span></h3>
+						<span class="admin-modal-close" onclick="closeProgramModal()">&times;</span>
+					</div>
+					<form id="programForm" enctype="multipart/form-data">
+						<div class="productcontent">
+							<div class="maininfoproduct">
+								<!-- Левая колонка с изображением -->
+								<div class="image-column">
+									<input type="hidden" id="currentImageHidden" name="Image">
+									<img id="currentImagePreview" src="" class="program-image-preview">
+									<div class="image-upload-controls">
+										<input type="file" id="ImageUpload" name="NewImage"
+											   accept="image/*" onchange="handleImagePreview(this)">
+									</div>
+								</div>
+
+								<!-- Правая колонка с полями -->
+								<div class="fields-column">
+									<input type="hidden" id="ProgramId" name="Id">
+
+									<div class="admin-form-group">
+										<label>Название программы:</label>
+										<input type="text" id="ProgramName" name="Name"
+											   class="admin-form-control" required>
+										<div class="validation-message"></div>
+									</div>
+
+									<div class="admin-form-group">
+										<label>Путь к программе:</label>
+										<input type="text" id="Pathtodownload" name="Pathtodownload"
+											   class="admin-form-control" required readonly>
+											   @* вот я добавил input для загрузки файла *@
+										<input type="file" id="NewPathtodownload" name="NewPathtodownload"
+											   accept=".exe,application/octet-stream"
+											   onchange="handlePathDownloadPreview(this)"
+											   class="admin-form-control" style="background: transparent; color: black; border: none;">
+									</div>
+								</div>
+							</div>
+
+							<!-- Нижняя часть с описаниями -->
+							<div class="description-section">
+								<div class="admin-form-group">
+									<label>Короткое описание:</label>
+									<textarea id="ShortDescription" name="ShortDescription"
+											  class="admin-form-control" rows="3"
+											  maxlength="255"></textarea>
+								</div>
+
+								<div class="admin-form-group">
+									<label>Полное описание:</label>
+									<textarea style="height: 36.72612801678909vh;" id="LongDescription" name="LongDescription"
+											  class="admin-form-control rich-editor"></textarea>
+								</div>
+							</div>
+						</div>
+
+						<div class="admin-modal-footer">
+							<button id="saveProgramBtn" type="button" class="btn btn-save" onclick="saveProgram()">
+								<i class="fas fa-save"></i> Сохранить
+							</button>
+							<button type="button" class="btn btn-cancel" onclick="closeProgramModal()">
+								Отмена
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+			<!-- Модальное окно подтверждения перезаписи -->
+			<div id="confirmOverwriteModal" class="admin-modal">
+				<div class="admin-modal-content">
+					<div class="admin-modal-header">
+						<h3>Подтверждение замены</h3>
+						<span class="admin-modal-close" onclick="closeConfirmModal()">&times;</span>
+					</div>
+					<div class="admin-modal-body">
+						<p id="confirmMessage"></p>
+						<div class="image-comparison" id="imageComparison" style="display: none;">
+							<div>
+								<p>Текущее изображение:</p>
+								<img id="currentImageCompare" class="compare-image">
+							</div>
+							<div>
+								<p>Новое изображение:</p>
+								<img id="newImageCompare" class="compare-image">
+							</div>
+						</div>
+					</div>
+					<div class="admin-modal-footer">
+						<button type="button" class="btn btn-confirm" onclick="confirmOverwrite()">
+							Да, заменить
+						</button>
+						<button type="button" class="btn btn-cancel" onclick="closeConfirmModal()">
+							Отмена
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

@@ -23,13 +23,7 @@ public partial class User
     [RegularExpression(@"^\+?[0-9]{10,15}$", ErrorMessage = "Некорректный формат телефона.")]
     public string? Telephone { get; set; }
 
-    [Required(ErrorMessage = "Номер договора обязателен.")]
-    [Range(1, 999999, ErrorMessage = "Номер договора должен быть положительным числом.")]
-    public int? ContractNumber { get; set; }
-
-    [Required(ErrorMessage = "Место заключения договора обязательно.")]
-    [StringLength(100, ErrorMessage = "Место заключения договора не должно превышать 100 символов.")]
-    public string? PlaceOfTheContract { get; set; }
+    public string? Role { get; set; }
 
     public bool AreUsersEqualValue(User user2)
     {
@@ -37,8 +31,7 @@ public partial class User
             return false;
 
         return Login == user2.Login && Password == user2.Password &&
-               Email == user2.Email && Telephone == user2.Telephone &&
-               ContractNumber == user2.ContractNumber && PlaceOfTheContract == user2.PlaceOfTheContract;
+               Email == user2.Email && Telephone == user2.Telephone;// мб надо добавить role
     }
     //public virtual BalancesOfService? BalancesOfService { get; set; }
     public virtual ICollection<BalancesOfService> BalancesOfServices { get; set; } = new List<BalancesOfService>();

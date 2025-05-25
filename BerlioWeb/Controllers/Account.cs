@@ -72,7 +72,7 @@ namespace BerlioWeb.Controllers
                                                  .Select(e => e.Id)
                                                  .FirstOrDefault())!=null)
                     {
-                        ViewBag.ShowElectronicCardBalance = (await _context.BalancesOfServices.FirstOrDefaultAsync(bs => bs.Loginclient == userLogin)).Balance;
+                        ViewBag.ShowElectronicCardBalance = (await _context.BalancesOfServices.FirstOrDefaultAsync(bs => bs.Loginclient == userLogin))?.Balance;
                     }
 
                     // проверка на существование балансов
