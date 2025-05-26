@@ -111,9 +111,57 @@ namespace BerlioWeb.Controllers
 
                 ViewBag.DepositHistory = await _context.DepositHistories.ToListAsync();
 
-                ViewBag.OrderSell = await _context.OrderSells.ToListAsync();
+                var os = await _context.OrderSells
+    .Select(os => new OrderDetail
+    {
+        Id = os.Id,
+        Count = os.Count,
+        Client = os.Client,
+        Finished = os.Finished,
+        Type = os.Type,
+        Name = os.Type == "Program"
+            ? _context.Programs
+                .Where(p => p.Id == os.Idproduct)
+                .Select(p => p.Name)
+                .FirstOrDefault()
+            : os.Type == "Equipment"
+                ? _context.Equipment
+                    .Where(e => e.Id == os.Idproduct)
+                    .Select(e => e.Name)
+                    .FirstOrDefault()
+                : null,
+        Image = os.Type == "Program"
+            ? _context.Programs
+                .Where(p => p.Id == os.Idproduct)
+                .Select(p => p.Image)
+                .FirstOrDefault()
+            : os.Type == "Equipment"
+                ? _context.Equipment
+                    .Where(e => e.Id == os.Idproduct)
+                    .Select(e => e.Image)
+                    .FirstOrDefault()
+                : null
+    })
+    .Where(x => x.Name != null)
+    .ToListAsync();
+                ViewBag.OrderSell = os;
 
-                ViewBag.EquipmentDelivery = await _context.EquipmentDeliveries.ToListAsync();
+                var ed = await _context.EquipmentDeliveries.Select(ed => new DeliveryDetail
+                {
+                    Id = ed.Id,
+                    Addressdelivery = ed.Addressdelivery,
+                    Timedelivery = ed.Timedelivery,
+                    Name = _context.Equipment.Where(e=>e.Id==
+                    _context.OrderSells.Where(o=>o.Id==ed.Idordersell).Select(o=>o.Idproduct).FirstOrDefault())
+                    .Select(o=>o.Name)
+                    .FirstOrDefault(),
+                    Image = _context.Equipment.Where(e => e.Id ==
+                    _context.OrderSells.Where(o => o.Id == ed.Idordersell).Select(o => o.Idproduct).FirstOrDefault())
+                    .Select(o => o.Image)
+                    .FirstOrDefault()
+                }).ToListAsync();
+
+                ViewBag.EquipmentDelivery = ed;
 
                 ViewBag.Users = await _context.Users.ToListAsync();
 
@@ -516,6 +564,58 @@ namespace BerlioWeb.Controllers
             public int ProgramId { get; set; }
             [Range(0.01, 1000000)]
             public double NewBalance { get; set; }
+        }
+        [HttpPost]
+        public async Task<IActionResult> UpdateFinished([FromBody] UpdateOrderDto model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return Json(new { success = false, message = "Неверные данные" });
+            }
+            await using (var _context = new BerlioDatabaseContext())
+            {
+                var q = await _context.OrderSells.FirstOrDefaultAsync(os => os.Id == model.ProgramId);
+                if (q != null)
+                {
+                    q.Finished = model.NewFinished;
+                    await _context.SaveChangesAsync();
+                    return Ok(new { success = true });
+                }
+                return BadRequest(new { success = false, message = $"Нет заказа с id: {model.ProgramId}" });
+            }
+        }
+        public class UpdateOrderDto
+        {
+            [Required]
+            public int ProgramId { get; set; }
+            
+            public bool NewFinished { get; set; }
+        }
+        [HttpPost]
+        public async Task<IActionResult> UpdateRole([FromBody] UpdateUserRoleDto model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return Json(new { success = false, message = "Неверные данные" });
+            }
+            await using (var _context = new BerlioDatabaseContext())
+            {
+                var q = await _context.Users.FirstOrDefaultAsync(os => os.Login == model.Login);
+                if (q != null)
+                {
+                    q.Role = model.NewRole;
+                    await _context.SaveChangesAsync();
+                    return Ok(new { success = true });
+                }
+                return BadRequest(new { success = false, message = $"Нет пользоветеля с Login: {model.Login}" });
+            }
+        }
+        public class UpdateUserRoleDto
+        {
+            [Required]
+            public string? Login { get; set; }
+
+            public string? NewRole { get; set; }
         }
     }
 }

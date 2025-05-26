@@ -13,11 +13,29 @@
 		let pendingFormData = null;
 		let isSameName = false;
 		document.addEventListener("DOMContentLoaded", function () {
+				// Обработчики для "Закончен"
+		const editableFinishedCells = document.querySelectorAll('.editable-finished');
+		editableFinishedCells.forEach(cell => {
+			cell.addEventListener('click', function (event) {
+				if (!this.isEditing) { // Проверяем флаг
+					makeFinishedEditable(this);
+				}
+			});
+		});
+			// сделать ячейки балансов изменяемыми
 				const editableBalances = document.querySelectorAll('.editable-balance');
-
 		editableBalances.forEach(cell => {
 			cell.addEventListener('click', function () {
 				makeEditable(cell);
+			});
+		});
+			// Обработчики для "Роль"
+		const editableRoles = document.querySelectorAll('.editable-role');
+		editableRoles.forEach(cell => {
+			cell.addEventListener('click', function (event) {
+				if (!this.isEditing) {
+					makeRoleEditable(this);
+				}
 			});
 		});
 
@@ -580,7 +598,7 @@
 				.then(response => location.reload());
 			}
 		}
-
+		// Изменение баланса в таблице
 		function makeEditable(cell) {
 			const originalValue = cell.getAttribute('data-original-value');
 			const input = document.createElement('input');
@@ -602,7 +620,7 @@
 			input.focus();
 		}
 
-				function saveBalance(cell, input) {
+		function saveBalance(cell, input) {
 			const newValue = input.value.trim();
 			const programId = cell.closest('tr').getAttribute('data-program-id');
 
@@ -642,6 +660,158 @@
 
 		function restoreOriginalValue(cell, originalValue) {
 			cell.innerHTML = `${originalValue} BYN`;
+		}
+
+		// Изменение статуса заказа
+				// Функция для открытия выпадающего списка "Закончен"
+		function makeFinishedEditable(cell) {
+			const originalValue = cell.getAttribute('data-original-value');
+			const select = document.createElement('select');
+			select.className = 'finished-select';
+
+			// Создаем опции
+			const options = [
+				{ value: 'true', text: 'True' },
+				{ value: 'false', text: 'False' }
+			];
+
+			options.forEach(opt => {
+				const option = document.createElement('option');
+				option.value = opt.value;
+				option.textContent = opt.text;
+				option.selected = (opt.value === originalValue);
+				select.appendChild(option);
+			});
+
+			// Обработчики событий
+			select.addEventListener('change', () => saveFinished(cell, select));
+			select.addEventListener('blur', () => saveFinished(cell, select));
+			select.addEventListener('keydown', (e) => {
+				if (e.key === 'Enter') {
+					saveFinished(cell, select);
+				}
+			});
+
+			// Очистка и добавление элемента
+			cell.innerHTML = '';
+			cell.appendChild(select);
+			select.focus();
+			cell.isEditing = true; // Устанавливаем флаг здесь
+		}
+
+		// Функция сохранения статуса "Закончен"
+		function saveFinished(cell, select) {
+			const newValue = select.value;
+			const programId = cell.closest('tr').getAttribute('data-program-id');
+
+			fetch('/Admin/UpdateFinished', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+				},
+				body: JSON.stringify({
+					ProgramId: parseInt(programId, 10),
+					NewFinished: newValue === 'true'
+				})
+			})
+			.then(response => response.json())
+			.then(data => {
+				if (data.success) {
+					cell.setAttribute('data-original-value', newValue);
+					cell.textContent = newValue === 'true' ? 'True' : 'False';
+				} else {
+					showError(data.message || 'Ошибка сохранения');
+					restoreOriginalFinished(cell);
+				}
+				cell.isEditing = false; // Сброс флага после завершения
+			})
+			.catch(error => {
+				console.error('Ошибка:', error);
+				showError('Ошибка соединения');
+				restoreOriginalFinished(cell);
+				cell.isEditing = false; // Сброс флага при ошибке
+			});
+		}
+
+		// Функция восстановления исходного значения
+		function restoreOriginalFinished(cell) {
+			const originalValue = cell.getAttribute('data-original-value');
+			cell.textContent = originalValue === 'true' ? 'True' : 'False';
+			cell.isEditing = false; // Сброс флага при восстановлении
+		}
+				// Функция для открытия выпадающего списка "Роль"
+		function makeRoleEditable(cell) {
+			const originalValue = cell.getAttribute('data-original-value');
+			const select = document.createElement('select');
+			select.className = 'role-select';
+
+			// Добавьте доступные роли (можно изменить на ваши)
+			const roles = ["user", "admin"];
+			roles.forEach(role => {
+				const option = document.createElement('option');
+				option.value = role;
+				option.textContent = role;
+				option.selected = (role === originalValue);
+				select.appendChild(option);
+			});
+
+			// Обработчики событий
+			select.addEventListener('change', () => saveRole(cell, select));
+			select.addEventListener('blur', () => saveRole(cell, select));
+			select.addEventListener('keydown', (e) => {
+				if (e.key === 'Enter') {
+					saveRole(cell, select);
+				}
+			});
+
+			// Очистка и добавление элемента
+			cell.innerHTML = '';
+			cell.appendChild(select);
+			select.focus();
+			cell.isEditing = true; // Устанавливаем флаг
+		}
+
+		// Функция сохранения роли
+		function saveRole(cell, select) {
+			const newValue = select.value;
+			const login = cell.closest('tr').getAttribute('data-program-id');
+
+			fetch('/Admin/UpdateRole', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+				},
+				body: JSON.stringify({
+					Login: login,
+					NewRole: newValue
+				})
+			})
+			.then(response => response.json())
+			.then(data => {
+				if (data.success) {
+					cell.setAttribute('data-original-value', newValue);
+					cell.textContent = newValue;
+				} else {
+					showError(data.message || 'Ошибка сохранения');
+					restoreOriginalRole(cell);
+				}
+				cell.isEditing = false; // Сброс флага
+			})
+			.catch(error => {
+				console.error('Ошибка:', error);
+				showError('Ошибка соединения');
+				restoreOriginalRole(cell);
+				cell.isEditing = false;
+			});
+		}
+
+		// Функция восстановления исходной роли
+		function restoreOriginalRole(cell) {
+			const originalValue = cell.getAttribute('data-original-value');
+			cell.textContent = originalValue;
+			cell.isEditing = false; // Сброс флага
 		}
 	</script>
 }
@@ -885,6 +1055,22 @@
 		pointer-events: none;
 	}
 	/* Стили таблицы */
+	.editable-role {
+		cursor: pointer;
+		position: relative;
+	}
+
+		.editable-role:hover {
+			background-color: rgba(233, 69, 96, 0.1);
+		}
+	.editable-finished {
+		cursor: pointer;
+		position: relative;
+	}
+
+		.editable-finished:hover {
+			background-color: rgba(233, 69, 96, 0.1);
+		}
 	.editable-balance {
 		cursor: pointer;
 		position: relative;
@@ -1326,8 +1512,7 @@
 		</div>
 		<div id="users" style="background-color: #87878778;" class="content-item">
 			<h2>Пользователи</h2>
-			<div class="admin-table-controls">
-			</div>
+			<div class="admin-table-controls"></div>
 			<div class="admin-table-container">
 				<table class="admin-table">
 					<thead>
@@ -1347,10 +1532,8 @@
 								<td>@dh.Password</td>
 								<td>@dh.Email</td>
 								<td>@dh.Telephone</td>
-								<td>@dh.Role</td>
-								@* <td class="editable-balance" data-original-value="@dh.Sumofmoney">
-									@string.Format("{0:0.00} BYN", dh.Sumofmoney)
-								</td> *@
+								<!-- Добавляем класс editable-role и атрибут data-original-value -->
+								<td class="editable-role" data-original-value="@dh.Role">@dh.Role</td>
 							</tr>
 						}
 					</tbody>
@@ -1366,17 +1549,24 @@
 					<thead>
 						<tr>
 							<th>ID</th>
-							<th>ID заказа</th>
+							<th>Название</th>
+							<th>Картинка</th>
 							<th>Адрес доставки</th>
 							<th>Время доставки</th>
 						</tr>
 					</thead>
 					<tbody>
-						@foreach (EquipmentDelivery dh in ViewBag.EquipmentDelivery ?? new List<EquipmentDelivery>())
+						@foreach (DeliveryDetail dh in ViewBag.EquipmentDelivery ?? new List<DeliveryDetail>())
 						{
 							<tr data-program-id="@dh.Id">
 								<td>@dh.Id</td>
-								<td>@dh.Idordersell</td>
+								<td>@dh.Name</td>
+								<td>
+									@if (!string.IsNullOrEmpty(dh.Image))
+									{
+										<img src="~/images/@dh.Image" class="program-thumbnail">
+									}
+								</td>
 								<td>@dh.Addressdelivery</td>
 								<td>@dh.Timedelivery</td>
 								@* <td class="editable-balance" data-original-value="@dh.Sumofmoney">
@@ -1397,7 +1587,8 @@
 					<thead>
 						<tr>
 							<th>ID</th>
-							<th>ID продукта</th>
+							<th>Название</th>
+							<th>Картинка</th>
 							<th>Количество</th>
 							<th>Закончен</th>
 							<th>Тип</th>
@@ -1405,16 +1596,21 @@
 						</tr>
 					</thead>
 					<tbody>
-						@foreach (OrderSell dh in ViewBag.OrderSell ?? new List<OrderSell>())
+						@foreach (OrderDetail dh in ViewBag.OrderSell ?? new List<OrderDetail>())
 						{
 							<tr data-program-id="@dh.Id">
 								<td>@dh.Id</td>
-								<td>@dh.Idproduct</td>
+								<td>@dh.Name</td>
+								<td>
+									@if (!string.IsNullOrEmpty(dh.Image))
+									{
+										<img src="~/images/@dh.Image" class="program-thumbnail">
+									}
+								</td>
 								<td>@dh.Count</td>
-								<td>@dh.Finished</td>
-								@* <td class="editable-balance" data-original-value="@dh.Sumofmoney">
-									@string.Format("{0:0.00} BYN", dh.Sumofmoney)
-								</td> *@
+								<td class="@(dh.Type == "Equipment" ? "editable-finished" : "")" data-original-value="@dh.Finished.ToString().ToLower()">
+    @dh.Finished
+</td>
 								<td>@dh.Type</td>
 								<td>@dh.Client</td>
 							</tr>
@@ -1444,7 +1640,7 @@
 							<tr data-program-id="@dh.Id">
 								<td>@dh.Id</td>
 								<td>@dh.Timedeposit</td>
-								<td class="editable-balance" data-original-value="@dh.Sumofmoney">
+								<td data-original-value="@dh.Sumofmoney">
 									@string.Format("{0:0.00} BYN", dh.Sumofmoney)
 								</td>
 								<td>@dh.TypeBalance</td>
