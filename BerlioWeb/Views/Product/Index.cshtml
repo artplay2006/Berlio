@@ -41,7 +41,7 @@
         </p>
     </div>
 
-    <div style="margin:2.5vw 0 0; background-color: white; border-radius: 10px; padding: 20px;">
+    @* <div style="margin:2.5vw 0 0; background-color: white; border-radius: 10px; padding: 20px;">
         <h6 style="font-size: 1vw;">Отзывы:</h6>
         <div class="comment">
             <div class="comment-details">
@@ -53,7 +53,7 @@
                 <p style="font-size: 0.83vw;">Дата</p>
             </div>
         </div>
-    </div>
+    </div> *@
 </div>
 
 <!-- Модальное окно заказа -->
@@ -70,19 +70,32 @@
                 <input type="hidden" id="productType" value="Program" />
                 <div class="form-group">
                     <label for="cardNumber">Номер карты:</label>
-                    <input type="text" id="cardNumber" name="cardNumber" required placeholder="XXXX XXXX XXXX XXXX">
+                    <input type="text"
+                           class="form-control"
+                           id="cardNumber"
+                           name="cardNumber"
+                           required
+                           placeholder="XXXX XXXX XXXX XXXX"
+                           pattern="(?:\d{4}\s?){4}"
+                           maxlength="19"
+                           oninput="formatCardNumber(this)"
+                           onblur="validateCardNumber(this)">
+
+                    <div class="invalid-feedback">Введите корректный номер карты (16 цифр)</div>
                 </div>
                 <div class="form-group">
                     <label for="securityCode">Код безопасности:</label>
-                    <input type="text" id="securityCode" name="securityCode" required placeholder="CVC/CVV">
+                    <input class="form-control" type="text" id="securityCode" name="securityCode" required placeholder="CVC/CVV"
+                           maxlength="3" pattern="\d{3}" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 3);"
+                           onblur="if(this.value.length !== 3) this.value = '';">
                 </div>
                 <div class="form-group">
                     <label for="expiryDate">Срок карты:</label>
-                    <input type="text" id="expiryDate" name="expiryDate" placeholder="MM/YY">
+                    <input class="form-control" type="text" id="expiryDate" name="expiryDate" placeholder="MM/YY">
                 </div>
                 <div class="form-group">
                     <label for="cardHolder">Имя владельца карты:</label>
-                    <input type="text" id="cardHolder" name="cardHolder">
+                    <input class="form-control" type="text" id="cardHolder" name="cardHolder">
                 </div>
                 <button type="submit" class="submit-btn">Отправить заявку</button>
             </form>
@@ -94,31 +107,51 @@
                 <input type="hidden" id="productType" value="Equipment" />
                 <div class="form-group">
                     <label for="cardNumber">Номер карты:</label>
-                    <input type="text" id="cardNumber" name="cardNumber" required placeholder="XXXX XXXX XXXX XXXX">
+                    <input type="text"
+                           class="form-control"
+                           id="cardNumber"
+                           name="cardNumber"
+                           required
+                           placeholder="XXXX XXXX XXXX XXXX"
+                           pattern="(?:\d{4}\s?){4}"
+                           maxlength="19"
+                           oninput="formatCardNumber(this)"
+                           onblur="validateCardNumber(this)">
                 </div>
                 <div class="form-group">
                     <label for="securityCode">Код безопасности:</label>
-                    <input type="number" id="securityCode" name="securityCode" required placeholder="CVC/CVV">
+                    <input class ="form-control" type="text" id="securityCode" name="securityCode" required placeholder="CVC/CVV"
+                           maxlength="3" pattern="\d{3}" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 3);"
+                           onblur="if(this.value.length !== 3) this.value = '';">
                 </div>
                 <div class="form-group">
                     <label for="expiryDate">Срок карты:</label>
-                    <input type="text" id="expiryDate" name="expiryDate" placeholder="MM/YY">
+                    <input class="form-control" type="text" id="expiryDate" name="expiryDate" placeholder="MM/YY">
                 </div>
                 <div class="form-group">
                     <label for="cardHolder">Имя владельца карты:</label>
-                    <input type="text" id="cardHolder" name="cardHolder">
+                    <input class="form-control" type="text" id="cardHolder" name="cardHolder">
                 </div>
                 <div class="form-group">
                     <label for="cardHolder">Количество:</label>
-                    <input type="number" id="countEquipment" name="countEquipment">
+                    <input class="form-control" type="number"
+                           id="countEquipment"
+                           name="countEquipment"
+                           min="1"
+                           oninput="this.value = Math.abs(this.value)">
                 </div>
                 <div class="form-group">
                     <label for="cardHolder">Адрес доставки:</label>
-                    <input type="text" id="addressDelivery" name="addressDelivery">
+                    <input class="form-control" type="text" id="addressDelivery" name="addressDelivery">
                 </div>
                 <div class="form-group">
                     <label for="cardHolder">Время доставки:</label>
-                    <input type="datetime-local" id="timeDelivery" name="timeDelivery">
+                    <input class="form-control"
+                           type="datetime-local"
+                           id="timeDelivery"
+                           name="timeDelivery"
+                           min=""
+                           required>
                 </div>
                 <button type="submit" class="submit-btn">Отправить заявку</button>
             </form>
@@ -139,6 +172,38 @@
 </div>
 
 <style>
+    .error-message {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        animation: slideIn 0.15s ease-out;
+        transition: opacity 0.15s;
+    }
+
+    .error-content, .success-content {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .error-content i {
+            color: #dc3545;
+            font-size: 1.2em;
+        }
+
+    .error-close, .success-close {
+        background: none;
+        border: none;
+        color: inherit;
+        cursor: pointer;
+        margin-left: auto;
+        padding: 0 5px;
+    }
     /* Стили модального окна */
     .modal {
         display: none;
@@ -240,6 +305,51 @@
 </style>
 
 <script>
+        document.addEventListener('DOMContentLoaded', function() {
+        const deliveryInput = document.getElementById('timeDelivery');
+
+        // Устанавливаем минимальную дату как текущую
+        const now = new Date();
+        // Форматируем дату в нужный для input формат (YYYY-MM-DDTHH:MM)
+        const minDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+                        .toISOString()
+                        .slice(0, 16);
+
+        deliveryInput.min = minDate;
+
+        // Дополнительная валидация при изменении
+        deliveryInput.addEventListener('change', function() {
+            const selectedDate = new Date(this.value);
+            if (selectedDate < now) {
+                this.value = minDate;
+                showError('Нельзя выбрать дату в прошлом');
+            }
+        });
+    });
+        function formatCardNumber(input) {
+        // Удаляем все нецифровые символы
+        let value = input.value.replace(/\D/g, '');
+
+        // Добавляем пробелы после каждых 4 цифр
+        value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+
+        // Обрезаем до 16 цифр (19 символов с пробелами)
+        if (value.length > 19) {
+            value = value.substring(0, 19);
+        }
+
+        input.value = value;
+    }
+
+    function validateCardNumber(input) {
+        // Проверяем, что введено ровно 16 цифр
+        const digitsOnly = input.value.replace(/\D/g, '');
+        if (digitsOnly.length !== 16) {
+            input.setCustomValidity('Номер карты должен содержать 16 цифр');
+        } else {
+            input.setCustomValidity('');
+        }
+    }
     // Функция для получения куки по имени
     function getCookie(name) {
         const cookies = document.cookie.split(';');
@@ -342,7 +452,7 @@
                 } *@
                 closeModal();
             } else {
-                alert('Ошибка при оформлении заказа: ' + result.message);
+                showError('Ошибка при оформлении заказа: ' + result.message);
             }
 
             if(productType=='Equipment'){
@@ -371,15 +481,48 @@
                 } *@
                 closeModal();
             } else {
-                alert('Ошибка при оформлении заказа: ' + result2.message);
+                showError('Ошибка при оформлении заказа: ' + result2.message);
             }
             }
         } catch (error) {
             console.error('Ошибка:', error);
-            alert('Произошла ошибка при отправке формы');
+            showError('Произошла ошибка при отправке формы');
         }
     }
+            function showError(message) {
+            let errorContainer = document.getElementById('errorContainer');
 
+            if (!errorContainer) {
+                errorContainer = document.createElement('div');
+                errorContainer.id = 'errorContainer';
+                errorContainer.style.position = 'fixed';
+                errorContainer.style.top = '20px';
+                errorContainer.style.right = '20px';
+                errorContainer.style.zIndex = '10000';
+                document.body.appendChild(errorContainer);
+            }
+
+            const errorElement = document.createElement('div');
+            errorElement.className = 'error-message';
+            errorElement.innerHTML = `
+                <div class="error-content">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>${message}</span>
+                    <button class="error-close" onclick="this.parentElement.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+
+            errorContainer.appendChild(errorElement);
+            errorContainer.style.display = 'block';
+
+            // Автоматическое скрытие через 5 секунд
+            setTimeout(() => {
+                errorElement.style.opacity = '0';
+                setTimeout(() => errorElement.remove(), 300);
+            }, 5000);
+        }
     // Маска для номера карты
     document.getElementById('cardNumber').addEventListener('input', function(e) {
         this.value = this.value.replace(/\D/g, '')

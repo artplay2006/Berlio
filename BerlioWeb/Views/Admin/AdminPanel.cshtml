@@ -665,16 +665,23 @@
 		// Изменение статуса заказа
 				// Функция для открытия выпадающего списка "Закончен"
 		function makeFinishedEditable(cell) {
-			const originalValue = cell.getAttribute('data-original-value');
-			const select = document.createElement('select');
-			select.className = 'finished-select';
+			// Проверяем, не в режиме ли уже редактирования
+			if (cell.isEditing) return;
 
-			// Создаем опции
+			const originalValue = cell.getAttribute('data-original-value');
+			const currentDisplay = cell.textContent.trim();
+
+			// Создаем select элемент
+			const select = document.createElement('select');
+			select.className = 'finished-select form-control';
+
+			// Варианты с русскими значениями
 			const options = [
-				{ value: 'true', text: 'True' },
-				{ value: 'false', text: 'False' }
+				{ value: 'true', text: 'Да' },
+				{ value: 'false', text: 'Нет' }
 			];
 
+			// Заполняем select
 			options.forEach(opt => {
 				const option = document.createElement('option');
 				option.value = opt.value;
@@ -684,25 +691,39 @@
 			});
 
 			// Обработчики событий
-			select.addEventListener('change', () => saveFinished(cell, select));
-			select.addEventListener('blur', () => saveFinished(cell, select));
-			select.addEventListener('keydown', (e) => {
-				if (e.key === 'Enter') {
+			const saveAndClose = () => {
+				if (select.value !== originalValue || currentDisplay !== options.find(o => o.value === select.value)?.text) {
 					saveFinished(cell, select);
+				} else {
+					restoreOriginalFinished(cell);
 				}
+			};
+
+			select.addEventListener('change', saveAndClose);
+			select.addEventListener('blur', saveAndClose);
+			select.addEventListener('keydown', (e) => {
+				if (e.key === 'Enter') saveAndClose();
+				if (e.key === 'Escape') restoreOriginalFinished(cell);
 			});
 
-			// Очистка и добавление элемента
+			// Сохраняем оригинальное содержимое
+			cell.originalHTML = cell.innerHTML;
+			cell.isEditing = true;
+
+			// Заменяем содержимое ячейки
 			cell.innerHTML = '';
 			cell.appendChild(select);
 			select.focus();
-			cell.isEditing = true; // Устанавливаем флаг здесь
 		}
 
 		// Функция сохранения статуса "Закончен"
 		function saveFinished(cell, select) {
 			const newValue = select.value;
 			const programId = cell.closest('tr').getAttribute('data-program-id');
+			const displayValue = newValue === 'true' ? 'Да' : 'Нет';
+
+			// Показываем индикатор загрузки
+			cell.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
 			fetch('/Admin/UpdateFinished', {
 				method: 'POST',
@@ -715,67 +736,101 @@
 					NewFinished: newValue === 'true'
 				})
 			})
-			.then(response => response.json())
+			.then(response => {
+				if (!response.ok) throw new Error('Ошибка сети');
+				return response.json();
+			})
 			.then(data => {
 				if (data.success) {
 					cell.setAttribute('data-original-value', newValue);
-					cell.textContent = newValue === 'true' ? 'True' : 'False';
+					cell.textContent = displayValue;
+					showSuccess('Статус успешно обновлен');
 				} else {
-					showError(data.message || 'Ошибка сохранения');
-					restoreOriginalFinished(cell);
+					throw new Error(data.message || 'Ошибка сохранения');
 				}
-				cell.isEditing = false; // Сброс флага после завершения
 			})
 			.catch(error => {
 				console.error('Ошибка:', error);
-				showError('Ошибка соединения');
+				showError(error.message);
 				restoreOriginalFinished(cell);
-				cell.isEditing = false; // Сброс флага при ошибке
+			})
+			.finally(() => {
+				cell.isEditing = false;
 			});
 		}
 
 		// Функция восстановления исходного значения
 		function restoreOriginalFinished(cell) {
-			const originalValue = cell.getAttribute('data-original-value');
-			cell.textContent = originalValue === 'true' ? 'True' : 'False';
-			cell.isEditing = false; // Сброс флага при восстановлении
+			if (cell.originalHTML) {
+				cell.innerHTML = cell.originalHTML;
+			} else {
+				const originalValue = cell.getAttribute('data-original-value');
+				cell.textContent = originalValue === 'true' ? 'Да' : 'Нет';
+			}
+			cell.isEditing = false;
 		}
-				// Функция для открытия выпадающего списка "Роль"
+		// Функция для открытия выпадающего списка "Роль"
 		function makeRoleEditable(cell) {
-			const originalValue = cell.getAttribute('data-original-value');
-			const select = document.createElement('select');
-			select.className = 'role-select';
+			// Если уже в режиме редактирования - не делать ничего
+			if (cell.isEditing) return;
 
-			// Добавьте доступные роли (можно изменить на ваши)
-			const roles = ["user", "admin"];
+			const originalValue = cell.getAttribute('data-original-value');
+			const currentDisplay = cell.textContent.trim();
+
+			// Создаем select элемент
+			const select = document.createElement('select');
+			select.className = 'role-select form-control';
+
+			// Доступные роли с локализованными названиями
+			const roles = [
+				{ value: 'user', text: 'Пользователь' },
+				{ value: 'admin', text: 'Администратор' }
+			];
+
+			// Заполняем варианты
 			roles.forEach(role => {
 				const option = document.createElement('option');
-				option.value = role;
-				option.textContent = role;
-				option.selected = (role === originalValue);
+				option.value = role.value;
+				option.textContent = role.text;
+				option.selected = (role.value === originalValue);
 				select.appendChild(option);
 			});
 
 			// Обработчики событий
-			select.addEventListener('change', () => saveRole(cell, select));
-			select.addEventListener('blur', () => saveRole(cell, select));
-			select.addEventListener('keydown', (e) => {
-				if (e.key === 'Enter') {
+			const saveAndClose = () => {
+				if (select.value !== originalValue || currentDisplay !== roles.find(r => r.value === select.value)?.text) {
 					saveRole(cell, select);
+				} else {
+					restoreOriginalRole(cell);
 				}
+			};
+
+			select.addEventListener('change', saveAndClose);
+			select.addEventListener('blur', saveAndClose);
+			select.addEventListener('keydown', (e) => {
+				if (e.key === 'Enter') saveAndClose();
+				if (e.key === 'Escape') restoreOriginalRole(cell);
 			});
 
-			// Очистка и добавление элемента
+			// Сохраняем оригинальное содержимое для отката
+			cell.originalHTML = cell.innerHTML;
+			cell.isEditing = true;
+
+			// Заменяем содержимое
 			cell.innerHTML = '';
 			cell.appendChild(select);
 			select.focus();
-			cell.isEditing = true; // Устанавливаем флаг
 		}
 
 		// Функция сохранения роли
 		function saveRole(cell, select) {
 			const newValue = select.value;
 			const login = cell.closest('tr').getAttribute('data-program-id');
+			const roleDisplay = Array.from(select.options)
+								   .find(opt => opt.value === newValue)?.text || newValue;
+
+			// Показываем индикатор загрузки
+			cell.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
 			fetch('/Admin/UpdateRole', {
 				method: 'POST',
@@ -788,30 +843,39 @@
 					NewRole: newValue
 				})
 			})
-			.then(response => response.json())
+			.then(response => {
+				if (!response.ok) throw new Error('Network error');
+				return response.json();
+			})
 			.then(data => {
 				if (data.success) {
 					cell.setAttribute('data-original-value', newValue);
-					cell.textContent = newValue;
+					cell.textContent = roleDisplay;
+					showSuccess('Роль успешно обновлена');
 				} else {
-					showError(data.message || 'Ошибка сохранения');
-					restoreOriginalRole(cell);
+					throw new Error(data.message || 'Ошибка сохранения');
 				}
-				cell.isEditing = false; // Сброс флага
 			})
 			.catch(error => {
 				console.error('Ошибка:', error);
-				showError('Ошибка соединения');
+				showError(error.message);
 				restoreOriginalRole(cell);
+			})
+			.finally(() => {
 				cell.isEditing = false;
 			});
 		}
 
 		// Функция восстановления исходной роли
 		function restoreOriginalRole(cell) {
-			const originalValue = cell.getAttribute('data-original-value');
-			cell.textContent = originalValue;
-			cell.isEditing = false; // Сброс флага
+			if (cell.originalHTML) {
+				cell.innerHTML = cell.originalHTML;
+			} else {
+				const originalValue = cell.getAttribute('data-original-value');
+				// Локализованное отображение
+				cell.textContent = originalValue === 'admin' ? 'Администратор' : 'Пользователь';
+			}
+			cell.isEditing = false;
 		}
 	</script>
 }
@@ -1427,7 +1491,7 @@
 		<a style="text-decoration: none;
     color: inherit;    border: white solid 1px;
     border-radius: 10px;
-    padding: 10px;" asp-area="" asp-controller="Admin" asp-action="AdminPanel"><h3 style="color:white">Администраторская панель</h3></a>
+    padding: 10px;" asp-area="" asp-controller="Admin" asp-action="AdminPanel"><h3 style="color:white">Панель администратора</h3></a>
 		<a style="text-decoration: none;
     color: inherit;" asp-area="" asp-controller="" asp-action="">
 			<div class="header-account dropdown" style="border: white solid 1px;
@@ -1468,7 +1532,7 @@
 		</ul>
 	</div>
 	<!-- Контент -->
-	<div class="content">
+	<div class="content" style="padding: 0px 17vw 0px 5.21vw;">
 		<div id="settings" style="background-color: #87878778;" class="content-item active">
 			<h2>Настройки пользователя</h2>
 			<p>Здесь вы можете изменить свои настройки.</p>
@@ -1533,7 +1597,12 @@
 								<td>@dh.Email</td>
 								<td>@dh.Telephone</td>
 								<!-- Добавляем класс editable-role и атрибут data-original-value -->
-								<td class="editable-role" data-original-value="@dh.Role">@dh.Role</td>
+								<td class="editable-role"
+									data-original-value="@dh.Role"
+									data-show-value="@(dh.Role == "admin" ? "Админ" : "Пользователь")"
+									onclick="makeRoleEditable(this)">
+									@(dh.Role == "admin" ? "Админ" : "Пользователь")
+								</td>
 							</tr>
 						}
 					</tbody>
@@ -1609,9 +1678,8 @@
 								</td>
 								<td>@dh.Count</td>
 								<td class="@(dh.Type == "Equipment" ? "editable-finished" : "")" data-original-value="@dh.Finished.ToString().ToLower()">
-    @dh.Finished
-</td>
-								<td>@dh.Type</td>
+									@(dh.Finished == true ? "Да" : "Нет")</td>
+								<td>@(dh.Type == "Program" ? "Программа" : "Оборудование")</td>
 								<td>@dh.Client</td>
 							</tr>
 						}

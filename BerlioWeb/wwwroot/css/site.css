@@ -1,3 +1,5 @@
+/* Основные шрифты */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Open+Sans:wght@300;400;600&family=Source+Sans+3:wght@300;400;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
 html {
     font-size: 14px;
 }
@@ -16,13 +18,102 @@ html {
     position: relative;
     min-height: 100%;
 }
-
+/* это внедрение шрифтов */
+/*************************************************************************************************/
+:root {
+    /* Основные шрифты */
+    --font-main: 'Roboto', sans-serif; /* Основной текст */
+    --font-heading: 'Open Sans', sans-serif; /* Заголовки */
+    --font-ui: 'Source Sans 3', sans-serif; /* Интерфейсные элементы */
+    --font-data: 'IBM Plex Sans', sans-serif; /* Таблицы и данные */
+    --font-mono: 'Roboto Mono', monospace; /* Ввод данных и код */
+}
 body {
     /*margin-bottom: 60px;*/
+    font-family: var(--font-main);
+    line-height: 1.6;
     background-color: #222222;
     height: 100%;
 }
+/* Заголовки */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    margin: 0 0 1rem 0;
+}
+/* Основной контент */
+.content-area {
+    font-family: var(--font-main);
+    font-size: 1rem;
+    line-height: 1.7;
+}
 
+/* Формы и ввод данных */
+input, textarea, select, button {
+    font-family: var(--font-ui);
+    font-size: 0.95rem;
+}
+
+.input-field, .form-control {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+}
+
+/* Таблицы данных */
+.data-table {
+    font-family: var(--font-data);
+    font-size: 0.95rem;
+}
+
+    .data-table th {
+        font-weight: 500;
+    }
+
+/* Подписи и метки */
+.label, .caption {
+    font-family: var(--font-ui);
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: #666;
+}
+
+/* Навигация и кнопки */
+.nav-item, .btn {
+    font-family: var(--font-ui);
+    font-weight: 500;
+}
+/* Блог/статьи */
+.article-content {
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 1.1rem;
+    line-height: 1.8;
+}
+
+/* Админ-панель */
+.admin-panel {
+    font-family: 'IBM Plex Sans', sans-serif;
+}
+
+    .admin-panel .data-table {
+        font-size: 0.9rem;
+    }
+
+/* Карточки товаров */
+.product-card {
+    font-family: 'Roboto', sans-serif;
+}
+
+    .product-card .title {
+        font-family: 'Open Sans', sans-serif;
+        font-weight: 600;
+    }
+
+/* Форум/комментарии */
+.comment-text {
+    font-family: 'Source Sans 3', sans-serif;
+    line-height: 1.7;
+}
+/*************************************************************************************************/
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
     color: var(--bs-secondary-color);
     text-align: end;
@@ -219,6 +310,11 @@ berlio@berlio.by */
 }
 
 .overlay-h {
+    background-color: rgba(0, 0, 0, 0.5);
+    display: inline-block;
+    padding: 5px;
+    line-height: 1.5;
+    border-radius: 10px;
     position: absolute; /* Абсолютное позиционирование */
     top: 15%; /* Центрирование по вертикали */
     left: 25%; /* Центрирование по горизонтали */
@@ -228,6 +324,12 @@ berlio@berlio.by */
     z-index: 1; /* Уровень поверхности */
 }
 .overlay-text {
+    background-color: rgba(0, 0, 0, 0.5);
+    display: inline-block;
+    margin: 5px 0;
+    padding: 5px;
+    line-height: 1.5;
+    border-radius: 10px;
     position: absolute; /* Абсолютное позиционирование */
     top: 25%; /* Центрирование по вертикали */
     left: 25%; /* Центрирование по горизонтали */

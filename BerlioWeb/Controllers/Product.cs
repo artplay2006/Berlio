@@ -59,7 +59,8 @@ namespace BerlioWeb.Controllers
                     // Проверяем существующий заказ
                     var existingOrder = await db.OrderSells
                         .FirstOrDefaultAsync(o => o.Idproduct == orderData.Idproduct &&
-                                                o.Client == orderData.Client);
+                                                o.Client == orderData.Client &&
+                                                o.Type == orderData.Type);
 
                     if (existingOrder != null)
                     {

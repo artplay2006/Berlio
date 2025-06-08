@@ -818,7 +818,18 @@
 							<input type="hidden" id="balanceTypeInput" name="balanceType">
 							<div class="form-group">
 								<label for="amount">Сумма пополнения (BYN)</label>
-								<input type="number" step="0.01" min="1" class="form-control" id="amount" name="amount" required>
+								<input type="text" 
+       class="form-control" 
+       id="amount" 
+       name="amount" 
+       required
+       inputmode="decimal"
+       pattern="[0-9]+([,][0-9]{1,2})?"
+       oninput="this.value = this.value.replace(/[^0-9,]/g, '')
+                    .replace(/(,.*),/g, '$1')
+                    .replace(/^0+/, '0');"
+       onchange="this.value = this.value.replace(',', '.');
+                if(parseFloat(this.value) <= 0) this.value = '0,01';">
 								<div class="invalid-feedback">Пожалуйста, укажите сумму</div>
 							</div>
 							<div class="form-group">
@@ -834,7 +845,16 @@
 								</div>
 								<div class="form-group col-md-6">
 									<label for="cvv">CVV</label>
-									<input type="text" class="form-control" id="cvv" name="cvv" placeholder="123" required>
+									<input type="text" 
+       class="form-control" 
+       id="cvv" 
+       name="cvv" 
+       placeholder="123" 
+       maxlength="3"
+       required
+       pattern="\d{3}"
+       oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 3);"
+       onblur="if(this.value.length !== 3) this.value = '';">
 								</div>
 							</div>
 						</form>

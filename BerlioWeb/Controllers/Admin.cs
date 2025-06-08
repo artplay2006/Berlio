@@ -55,7 +55,7 @@ namespace BerlioWeb.Controllers
                         return Json(new { success = false, errorField = "LoginError", errorMessage = "Такого логина не существует" });
 
                     if (existingUser.Role != "admin")
-                        return Json(new { success = false, errorField = "GeneralError", errorMessage = "Ты не админ иди нахуй" });
+                        return Json(new { success = false, errorField = "GeneralError", errorMessage = "Вы не админ" });
 
                     if (!BCrypt.Net.BCrypt.Verify(Password, existingUser.Password))
                         return Json(new { success = false, errorField = "PasswordError", errorMessage = "Неправильный пароль" });
