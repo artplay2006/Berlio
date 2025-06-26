@@ -127,7 +127,7 @@ namespace BerlioWeb.Controllers
                         {
                             newuserset.Password = BCrypt.Net.BCrypt.HashPassword(newuserset.Password);
                         }
-
+                        newuserset.Role=olduserset.Role;
                         // Присоединяем новый объект
                         db.Users.Update(newuserset);
                         await db.SaveChangesAsync();

@@ -13,11 +13,14 @@
             const hasExistingDevice = await checkExistingDevice();
             const modal = new bootstrap.Modal(document.getElementById('registrationModal'));
             const alertElement = document.getElementById('existingDeviceAlert');
-
+            const btnsModal = document.getElementById('buttons-modal');
+            
             if (hasExistingDevice) {
                 alertElement.classList.remove('d-none');
+                btnsModal.classList.add('d-none');
             } else {
                 alertElement.classList.add('d-none');
+                btnsModal.classList.remove('d-none');
             }
 
             modal.show();
@@ -27,10 +30,10 @@
             const response = await registerDevice();
 
             if (response.success) {
-                // alert('Устройство успешно зарегистрировано!');
+                showSuccess('Устройство успешно зарегистрировано!');
                 $('#registrationModal').modal('hide');
             } else {
-                alert('Ошибка: ' + response.message);
+                showError('Ошибка: ' + response.message);
             }
         });
 
@@ -69,9 +72,127 @@
                 return { success: false, message: 'Ошибка сети' };
             }
         }
+        function showSuccess(message) {
+            let successContainer = document.getElementById('successContainer');
+
+            if (!successContainer) {
+                successContainer = document.createElement('div');
+                successContainer.id = 'successContainer';
+                successContainer.style.position = 'fixed';
+                successContainer.style.top = '20px';
+                successContainer.style.right = '20px';
+                successContainer.style.zIndex = '10000';
+                document.body.appendChild(successContainer);
+            }
+
+            const successElement = document.createElement('div');
+            successElement.className = 'success-message';
+            successElement.innerHTML = `
+                <div class="success-content">
+                    <i class="fas fa-check-circle"></i>
+                    <span>${message}</span>
+                    <button class="success-close" onclick="this.parentElement.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+
+            successContainer.appendChild(successElement);
+            successContainer.style.display = 'block';
+
+            // Автоматическое скрытие через 3 секунды
+            setTimeout(() => {
+                successElement.style.opacity = '0';
+                setTimeout(() => successElement.remove(), 300);
+            }, 3000);
+        }
+            function showError(message) {
+            let errorContainer = document.getElementById('errorContainer');
+
+            if (!errorContainer) {
+                errorContainer = document.createElement('div');
+                errorContainer.id = 'errorContainer';
+                errorContainer.style.position = 'fixed';
+                errorContainer.style.top = '20px';
+                errorContainer.style.right = '20px';
+                errorContainer.style.zIndex = '10000';
+                document.body.appendChild(errorContainer);
+            }
+
+            const errorElement = document.createElement('div');
+            errorElement.className = 'error-message';
+            errorElement.innerHTML = `
+                <div class="error-content">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>${message}</span>
+                    <button class="error-close" onclick="this.parentElement.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+
+            errorContainer.appendChild(errorElement);
+            errorContainer.style.display = 'block';
+
+            // Автоматическое скрытие через 5 секунд
+            setTimeout(() => {
+                errorElement.style.opacity = '0';
+                setTimeout(() => errorElement.remove(), 300);
+            }, 5000);
+        }
 </script>
 }
 <style>
+    .error-message {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        animation: slideIn 0.15s ease-out;
+        transition: opacity 0.15s;
+    }
+
+    .success-message {
+        background: #d4edda;
+        color: #155724;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        animation: slideIn 0.15s ease-out;
+        transition: opacity 0.15s;
+    }
+
+    .error-content, .success-content {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .error-content i {
+            color: #dc3545;
+            font-size: 1.2em;
+        }
+
+        .success-content i {
+            color: #28a745;
+            font-size: 1.2em;
+        }
+
+    .error-close, .success-close {
+        background: none;
+        border: none;
+        color: inherit;
+        cursor: pointer;
+        margin-left: auto;
+        padding: 0 5px;
+    }
     #registrationModal .modal-content {
         border-radius: 10px;
     }
@@ -182,7 +303,7 @@
                             У вас уже есть зарегистрированное устройство!
                         </div>
                     </div>
-                    <div class="modal-footer">
+                    <div id="buttons-modal" class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Нет</button>
                         <button type="button" class="btn btn-primary" id="confirmRegistration">Да</button>
                     </div>

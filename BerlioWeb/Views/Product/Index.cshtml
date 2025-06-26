@@ -185,6 +185,19 @@
         transition: opacity 0.15s;
     }
 
+    .success-message {
+        background: #d4edda;
+        color: #155724;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        animation: slideIn 0.15s ease-out;
+        transition: opacity 0.15s;
+    }
+
     .error-content, .success-content {
         display: flex;
         align-items: center;
@@ -193,6 +206,11 @@
 
         .error-content i {
             color: #dc3545;
+            font-size: 1.2em;
+        }
+
+        .success-content i {
+            color: #28a745;
             font-size: 1.2em;
         }
 
@@ -443,13 +461,8 @@
             const result = await response.json();
 
             if (response.ok) {
-                @* 
-                Здесь должно быть красивое уведомление      
-                if (result.exists) {
-                    alert('Вы уже заказывали этот товар ранее');
-                } else {
-                    alert('Заказ успешно оформлен!');
-                } *@
+                // вот вызов функции уведомления о успешном заказе
+                showSuccess(productType=='Equipment'?'Заказ успешно оформлен':'Программа успешно преобретена');
                 closeModal();
             } else {
                 showError('Ошибка при оформлении заказа: ' + result.message);
@@ -472,13 +485,6 @@
             const result2 = await response2.json();
 
             if (response2.ok) {
-                @* 
-                Здесь должно быть красивое уведомление    
-                if (result2.exists) {
-                    alert('Вы уже заказывали этот товар ранее');
-                } else {
-                    alert('Заказ успешно оформлен!');
-                } *@
                 closeModal();
             } else {
                 showError('Ошибка при оформлении заказа: ' + result2.message);
@@ -489,6 +495,40 @@
             showError('Произошла ошибка при отправке формы');
         }
     }
+    function showSuccess(message) {
+            let successContainer = document.getElementById('successContainer');
+
+            if (!successContainer) {
+                successContainer = document.createElement('div');
+                successContainer.id = 'successContainer';
+                successContainer.style.position = 'fixed';
+                successContainer.style.top = '20px';
+                successContainer.style.right = '20px';
+                successContainer.style.zIndex = '10000';
+                document.body.appendChild(successContainer);
+            }
+
+            const successElement = document.createElement('div');
+            successElement.className = 'success-message';
+            successElement.innerHTML = `
+                <div class="success-content">
+                    <i class="fas fa-check-circle"></i>
+                    <span>${message}</span>
+                    <button class="success-close" onclick="this.parentElement.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+
+            successContainer.appendChild(successElement);
+            successContainer.style.display = 'block';
+
+            // Автоматическое скрытие через 3 секунды
+            setTimeout(() => {
+                successElement.style.opacity = '0';
+                setTimeout(() => successElement.remove(), 300);
+            }, 3000);
+        }
             function showError(message) {
             let errorContainer = document.getElementById('errorContainer');
 
